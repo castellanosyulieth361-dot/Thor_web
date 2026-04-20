@@ -1,0 +1,149 @@
+.maquinaCard{
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: #fff;
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: .2s ease;
+  width: 100%;
+}
+
+.maquinaCard:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(15,23,42,.08);
+}
+
+.maquinaCard:disabled{
+  cursor: not-allowed;
+}
+
+.maquinaCard__photo{
+  width: 100%;
+  height: 180px;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.maquinaCard__photo img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.maquinaCard__name{
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.maquinaCard__sub{
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.maquinaCard--normal .maquinaCard__photo{
+  filter: none;
+}
+
+.maquinaCard--gray .maquinaCard__photo{
+  filter: grayscale(100%);
+  opacity: .75;
+}
+
+.maquinaCard--blue .maquinaCard__photo{
+  box-shadow: inset 0 0 0 999px rgba(96,165,250,.18);
+}
+
+.card--ok .maquinaCard__photo {
+  border: 3px solid #22c55e;
+}
+
+.card--mantenimiento .maquinaCard__photo {
+  border: 3px solid #3b82f6;
+}
+
+.card--no .maquinaCard__photo {
+  border: 3px solid #9ca3af;
+  filter: grayscale(100%);
+  opacity: 0.8;
+}
+
+.maqPhotoWrap {
+  position: relative;
+}
+
+.maqBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  color: white;
+}
+
+.maqBadge--ok {
+  background: #22c55e;
+}
+
+.maqBadge--blue {
+  background: #3b82f6;
+}
+
+.maqBadge--gray {
+  background: #6b7280;
+}
+
+.card--ok .maquinaCard__photo {
+  border: 3px solid #22c55e;
+}
+
+.card--fallo .maquinaCard__photo {
+  border: 3px solid #f97316;
+}
+
+.card--mantenimiento .maquinaCard__photo {
+  border: 3px solid #3b82f6;
+}
+
+.card--no .maquinaCard__photo {
+  border: 3px solid #9ca3af;
+  filter: grayscale(100%);
+  opacity: 0.75;
+}
+
+.maqPhotoWrap {
+  position: relative;
+}
+
+.maqBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.maqBadge--ok {
+  background: #22c55e;
+}
+
+.maqBadge--fallo {
+  background: #f97316;
+}
+
+.maqBadge--blue {
+  background: #3b82f6;
+}
+
+.maqBadge--gray {
+  background: #6b7280;
+}
