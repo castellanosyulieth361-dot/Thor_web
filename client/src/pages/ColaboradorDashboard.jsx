@@ -13,6 +13,8 @@ import { FiFileText, FiTool, FiBell, FiUser } from "react-icons/fi";
 import { BsQrCode } from "react-icons/bs";
 import { TbReport } from "react-icons/tb";
 
+import ReporteObservacionColaborador from "./ReporteObservacionColaborador";
+
 export default function ColaboradorDashboard() {
   const { user, logout, setUser } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -90,7 +92,7 @@ export default function ColaboradorDashboard() {
       desc: "Consulta de equipos asignados",
       icon: <FiTool />,
     },
-     {
+    {
       key: "reportes",
       title: "Reportes de Observación",
       desc: "Reporta actos que beneficien o traigan consecuencias para la empresa",
@@ -111,13 +113,13 @@ export default function ColaboradorDashboard() {
     },
     ...(isMobile
       ? [
-          {
-            key: "qr",
-            title: "Escanear QR",
-            desc: "Acceso rápido en campo",
-            icon: <BsQrCode />,
-          },
-        ]
+        {
+          key: "qr",
+          title: "Escanear QR",
+          desc: "Acceso rápido en campo",
+          icon: <BsQrCode />,
+        },
+      ]
       : []),
   ];
 
@@ -197,6 +199,14 @@ export default function ColaboradorDashboard() {
           {tab === "herramientas" && (
             <HerramientasColaborador
               key={`herramientas-${tabReload}`}
+              onBack={() => setTab("inicio")}
+            />
+          )}
+
+
+          {tab === "reportes" && (
+            <ReporteObservacionColaborador
+              key={`reportes-${tabReload}`}
               onBack={() => setTab("inicio")}
             />
           )}
@@ -598,9 +608,8 @@ function AlertasColaborador({ onBack, onResponderHabilitado }) {
 function AlertaCard({ alerta: a, onResponder }) {
   return (
     <div
-      className={`previewCard ${
-        a.tipo === "habilitacion" ? "previewCard--history" : "previewCard--preop"
-      }`}
+      className={`previewCard ${a.tipo === "habilitacion" ? "previewCard--history" : "previewCard--preop"
+        }`}
     >
       <div className="previewCard__badge">
         {a.tipo === "habilitacion" ? "Preoperacional habilitado" : "Alerta"}
@@ -917,12 +926,12 @@ function PerfilColaborador({ user, onUserUpdated, onBack }) {
                 const cls = esFuturo
                   ? "calendarCell--gray calendarCell--locked"
                   : estado === "realizado"
-                  ? "calendarCell--green"
-                  : estado === "na"
-                  ? "calendarCell--yellow"
-                  : estado === "bloqueado"
-                  ? "calendarCell--beige"
-                  : "calendarCell--red";
+                    ? "calendarCell--green"
+                    : estado === "na"
+                      ? "calendarCell--yellow"
+                      : estado === "bloqueado"
+                        ? "calendarCell--beige"
+                        : "calendarCell--red";
 
                 return (
                   <div
@@ -932,12 +941,12 @@ function PerfilColaborador({ user, onUserUpdated, onBack }) {
                       esFuturo
                         ? "Día futuro"
                         : estado === "realizado"
-                        ? "Preoperacional realizado"
-                        : estado === "na"
-                        ? `N/A: ${resumen?.[dateKey]?.motivo || "Sin motivo"}`
-                        : estado === "bloqueado"
-                        ? "Antes de tu ingreso"
-                        : "Sin preoperacional"
+                          ? "Preoperacional realizado"
+                          : estado === "na"
+                            ? `N/A: ${resumen?.[dateKey]?.motivo || "Sin motivo"}`
+                            : estado === "bloqueado"
+                              ? "Antes de tu ingreso"
+                              : "Sin preoperacional"
                     }
                   >
                     <span className="calendarCell__num">{day}</span>
@@ -1001,7 +1010,7 @@ function QrColaborador({ onBack }) {
           } catch (e) {
             setErrMsg(
               e?.response?.data?.message ||
-                "No se encontró la maquinaria o no está disponible."
+              "No se encontró la maquinaria o no está disponible."
             );
             setFase("error");
           } finally {
@@ -1016,7 +1025,7 @@ function QrColaborador({ onBack }) {
     return () => {
       try {
         codeReader.reset();
-      } catch {}
+      } catch { }
     };
   }, [fase]);
 
@@ -1028,7 +1037,7 @@ function QrColaborador({ onBack }) {
     setCamaraErr(null);
     try {
       readerRef.current?.reset();
-    } catch {}
+    } catch { }
     setFase("escaneando");
   }
 

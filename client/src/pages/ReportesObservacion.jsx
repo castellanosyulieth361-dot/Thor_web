@@ -256,7 +256,7 @@ function ReportesMensuales() {
   }
 
   useEffect(()=>{ loadCalendario(); }, [month]);
-  useEffect(()=>{ loadSinCerrar(); },  [filtros]);
+ useEffect(()=>{ loadSinCerrar(); }, [filtros.desde, filtros.hasta, filtros.area, filtros.situacion]);
 
   // ── Construcción del calendario ──
   const { firstDayOffset, daysInMonth } = useMemo(()=>{
@@ -728,7 +728,7 @@ function HistorialAnual() {
     if (mesAbierto===key) { setMesAbierto(null); return; }
     setMesAbierto(key);
 
-    if (!datosMes[key]) {
+   if (!datosMes[key] || datosMes[key]._stale) {
       setLoadingMes(key);
       try {
         const params = {};
@@ -751,7 +751,13 @@ function HistorialAnual() {
   }
 
   // Cuando cambian los filtros, limpiar datos de meses para recargar
-  useEffect(()=>{ setDatosMes({}); setMesAbierto(null); }, [filtros]);
+ useEffect(()=>{
+  setDatosMes(p =>
+    Object.fromEntries(
+      Object.entries(p).map(([k, v]) => [k, { ...v, _stale: true }])
+    )
+  );
+}, [filtros.area, filtros.situacion]);
 
   if (loading) return <div className="hint">Cargando historial...</div>;
   if (años.length===0) return <div className="hint">No hay reportes cerrados todavía.</div>;
