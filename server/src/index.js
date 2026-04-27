@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
+import pg from 'pg';
+
 import authRoutes from "./routes/auth.routes.js";
 import usuariosRoutes from "./routes/usuarios.routes.js";
 import maquinariaRoutes from "./routes/maquinaria.routes.js";
@@ -20,6 +22,7 @@ import reportesRoutes from "./routes/reportes.routes.js";
 
 dotenv.config();
 
+
 const app = express();
 
 app.set('trust proxy', 1);
@@ -27,6 +30,11 @@ app.set('trust proxy', 1);
 if (process.env.NODE_ENV === 'production') {
   console.log = () => {}; // Silencia console.log en prod
 }
+
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "http://localhost:5173")
