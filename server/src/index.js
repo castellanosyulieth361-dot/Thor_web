@@ -27,17 +27,24 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "http://localhost:5173")
   .split(",")
   .map((o) => o.trim());
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Permitir requests sin origen (Postman, apps móviles nativas, curl)
-      if (!origin) return callback(null, true);
-      if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-      callback(new Error(`Origen no permitido: ${origin}`));
-    },
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: (origin, callback) => {
+//       // Permitir requests sin origen (Postman, apps móviles nativas, curl)
+//       if (!origin) return callback(null, true);
+//       if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+//       callback(new Error(`Origen no permitido: ${origin}`));
+//     },
+//     credentials: true,
+//   })
+// );
+
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
+
 
 // ── BODY PARSERS ──────────────────────────────────────────────────────────────
 app.use(express.json({ limit: "10mb" }));
