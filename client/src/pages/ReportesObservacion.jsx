@@ -177,7 +177,7 @@ function DiligenciarReporte() {
         <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
           {SITUACIONES.map(s=>(
             <button key={s.value} type="button" onClick={()=>set("situacion",s.value)}
-              style={{
+              style={{                  
                 padding:"9px 16px", borderRadius:10, cursor:"pointer",
                 border:`2px solid ${form.situacion===s.value?"#1e3a8a":"#e5e7eb"}`,
                 background:form.situacion===s.value?"rgba(30,58,138,0.08)":"#fff",
