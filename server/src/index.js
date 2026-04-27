@@ -22,6 +22,12 @@ dotenv.config();
 
 const app = express();
 
+app.set('trust proxy', 1);
+
+if (process.env.NODE_ENV === 'production') {
+  console.log = () => {}; // Silencia console.log en prod
+}
+
 // ── CORS ─────────────────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "http://localhost:5173")
   .split(",")
