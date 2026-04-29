@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { boolean, z } from "zod";
+import { z } from "zod";
 import crypto from "crypto"
 import QRCode from "qrcode";
 import { pool } from "../db.js";
