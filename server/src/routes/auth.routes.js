@@ -68,7 +68,8 @@ router.post("/login", async (req, res) => {
     }
 
     const userRes = await pool.query(
-      `SELECT u.id, u.nombre, u.numero_documento, u.password_hash, u.activo, r.nombre AS rol
+      `SELECT u.id, u.nombre, u.cargo, u.numero_documento, u.foto_url, 
+              u.password_hash, u.activo, r.nombre AS rol
        FROM usuarios u
        JOIN roles r ON r.id = u.role_id
        WHERE u.numero_documento = $1 AND u.activo = TRUE`,
@@ -109,7 +110,9 @@ router.post("/login", async (req, res) => {
       user: {
         id: user.id,
         nombre: user.nombre,
+        cargo: user.cargo,        // ✅ AGREGADO
         numero_documento: user.numero_documento,
+        foto_url: user.foto_url,  // ✅ AGREGADO
         rol: user.rol,
       },
     });

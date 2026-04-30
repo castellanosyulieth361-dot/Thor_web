@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FiFileText, FiTool, FiBell, FiUser, FiLogOut, FiHome } from "react-icons/fi";
 import { BsQrCode } from "react-icons/bs";
+import { TbReport } from "react-icons/tb";
 import "./Header.css";
 
 export default function Header({ onNavigate, onLogout, currentTab, isMobile, cantAlertas = 0 }) {
@@ -11,15 +12,20 @@ export default function Header({ onNavigate, onLogout, currentTab, isMobile, can
     setOpen(false);
   };
 
+  // ✅ CORREGIDO: Overlay que cierra correctamente
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      setOpen(false);
+    }
+  };
+
   return (
     <header className="main-header">
-      {/* Cerrar dropdown al hacer click fuera */}
+      {/* ✅ Overlay corregido */}
       {open && (
         <div
-          style={{
-            position: "fixed", inset: 0, zIndex: 9998,
-          }}
-          onClick={() => setOpen(false)}
+          className="menu-overlay"
+          onClick={handleOverlayClick}
         />
       )}
 
@@ -30,7 +36,7 @@ export default function Header({ onNavigate, onLogout, currentTab, isMobile, can
       </div>
 
       <div className="menu-container">
-        {/* Botón hamburguesa con punto rojo si hay alertas */}
+        {/* ✅ Hamburguesa */}
         <div
           className={`hamburger2 ${open ? "active" : ""}`}
           onClick={() => setOpen(!open)}
@@ -56,6 +62,7 @@ export default function Header({ onNavigate, onLogout, currentTab, isMobile, can
           )}
         </div>
 
+        {/* ✅ Dropdown con className correcta */}
         <div className={`dropdown ${open ? "show" : ""}`}>
           <MenuItem
             icon={<FiHome />}
@@ -74,6 +81,12 @@ export default function Header({ onNavigate, onLogout, currentTab, isMobile, can
             label="Herramientas y Equipos"
             active={currentTab === "herramientas"}
             onClick={() => handleNavigate("herramientas")}
+          />
+          <MenuItem
+            icon={<TbReport />}
+            label="Reportes de Observación"
+            active={currentTab === "reportes"}
+            onClick={() => handleNavigate("reportes")}
           />
           <MenuItem
             icon={<FiBell />}
@@ -109,6 +122,7 @@ export default function Header({ onNavigate, onLogout, currentTab, isMobile, can
   );
 }
 
+// ✅ MenuItem SIN CAMBIOS
 function MenuItem({ icon, label, active, badge = 0, onClick }) {
   return (
     <div
@@ -148,7 +162,6 @@ function MenuItem({ icon, label, active, badge = 0, onClick }) {
           }}
         />
       )}
-
     </div>
   );
 }

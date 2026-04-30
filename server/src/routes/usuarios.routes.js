@@ -646,108 +646,55 @@ router.post("/:id/preoperacionales/na", requireAuth, requireAdmin, async (req, r
 });
 
 
-const editarUsuarioSchema = z.object({
-  nombre: z.string().min(2),
-  cargo: z.string().min(2),
-  fecha_ingreso: z.string().min(8),
-  tipo_contrato: z.string().min(2),
-  rh: z.string().min(1),
-  direccion: z.string().min(3),
-  numero_documento: z.string().min(5),
+// ✅ NUEVO schema - COPIA ESTO EXACTO
+const editarUsuarioColabSchema = z.object({
+  direccion: z.string().optional(),
   foto_url: z.string().nullable().optional(),
-  rol: z.enum(["admin", "colaborador"]),
-});
+}).passthrough();
 
 router.put("/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-
-    // El colaborador solo puede editar su propio perfil
-    // El admin puede editar cualquiera
     if (req.user.id !== id && req.user.rol !== "admin") {
-      return res.status(403).json({ message: "No autorizado." });
-    }
-    
-    if (req.user.id === id && req.user.rol !== "admin") {
-      req.body.rol = req.user.rol; // ignora lo que mande el frontend
-    }
-    const data = editarUsuarioSchema.parse(req.body);
-
-    const rolRes = await pool.query(
-      `SELECT id FROM roles WHERE nombre = $1`,
-      [data.rol]
-    );
-
-    const roleId = rolRes.rows[0]?.id;
-    if (!roleId) {
-      return res.status(400).json({ message: "Rol no válido." });
+      return res.status(403).json({ message: "No autorizado" });
     }
 
-    const docDuplicado = await pool.query(
-      `
-      SELECT 1
-      FROM usuarios
-      WHERE numero_documento = $1
-        AND id <> $2
-      LIMIT 1
-      `,
-      [data.numero_documento, id]
-    );
+    const data = editarUsuarioColabSchema.parse(req.body);
 
-    if (docDuplicado.rowCount > 0) {
-      return res.status(409).json({
-        message: "Ya existe otro usuario con ese número de documento.",
-      });
+    const updates = [];
+    const params = [];
+    let i = 1;
+
+    if (data.direccion !== undefined) {
+      updates.push(`direccion = $${i}`);
+      params.push(data.direccion);
+      i++;
+    }
+    if (data.foto_url !== undefined) {
+      updates.push(`foto_url = $${i}`);
+      params.push(data.foto_url);
+      i++;
     }
 
-    const r = await pool.query(
-      `
-      UPDATE usuarios
-      SET
-        nombre = $1,
-        cargo = $2,
-        fecha_ingreso = $3,
-        tipo_contrato = $4,
-        rh = $5,
-        direccion = $6,
-        numero_documento = $7,
-        foto_url = $8,
-        role_id = $9
-      WHERE id = $10
-      RETURNING id, nombre
-      `,
-      [
-        data.nombre,
-        data.cargo,
-        data.fecha_ingreso,
-        data.tipo_contrato,
-        data.rh,
-        data.direccion,
-        data.numero_documento,
-        data.foto_url ?? null,
-        roleId,
-        id,
-      ]
-    );
-
-    if (r.rowCount === 0) {
-      return res.status(404).json({ message: "Usuario no encontrado." });
+    if (updates.length === 0) {
+      return res.status(400).json({ message: "Sin datos para actualizar" });
     }
 
-    res.json({
-      message: "Usuario actualizado correctamente.",
-      user: r.rows[0],
-    });
+    params.push(id);
+    const query = `UPDATE usuarios SET ${updates.join(", ")} WHERE id = $${i} RETURNING id, direccion`;
+
+    console.log("🔧 SQL:", query);
+    console.log("🔧 PARAMS:", params);
+
+    const result = await pool.query(query, params);
+    res.json({ message: "OK", user: result.rows[0] });
   } catch (err) {
-    if (err?.name === "ZodError") {
-      return res.status(400).json({
-        message: "Datos inválidos",
-        issues: err.issues,
-      });
+    console.error("❌ ERROR PUT:", err);
+    if (err.name === "ZodError") {
+      console.log("🔍 ZOD:", err.issues);
+      return res.status(400).json({ error: "Zod", issues: err.issues });
     }
-
-    console.error("ERROR editando usuario:", err);
-    res.status(500).json({ message: "Error actualizando usuario" });
+    res.status(500).json({ error: err.message });
   }
 });
 

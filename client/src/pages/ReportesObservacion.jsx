@@ -751,13 +751,46 @@ function HistorialAnual() {
   }
 
   // Cuando cambian los filtros, limpiar datos de meses para recargar
- useEffect(()=>{
-  setDatosMes(p =>
-    Object.fromEntries(
-      Object.entries(p).map(([k, v]) => [k, { ...v, _stale: true }])
-    )
-  );
-}, [filtros.area, filtros.situacion]);
+  useEffect(()=>{
+    setDatosMes(p =>
+      Object.fromEntries(
+        Object.entries(p).map(([k, v]) => [k, { ...v, _stale: true }])
+      )
+    );
+  }, [filtros.area, filtros.situacion]);
+
+  // Si hay un mes abierto y sus datos quedaron stale (por cambio de filtro), recargarlo
+  useEffect(()=>{
+    if (!mesAbierto) return;
+    const datos = datosMes[mesAbierto];
+    if (!datos?._stale) return;
+
+    const [anio, mes] = mesAbierto.split("-").map(Number);
+    setLoadingMes(mesAbierto);
+
+    const params = {};
+    if (filtros.area)      params.area      = filtros.area;
+    if (filtros.situacion) params.situacion = filtros.situacion;
+
+    Promise.all([
+      api.get(`/reportes/historial/${anio}/${mes}`, { params }),
+      api.get("/reportes/calendario", {
+        params: { month: `${anio}-${String(mes).padStart(2,"0")}` }
+      }),
+    ])
+      .then(([rRes, calRes]) => {
+        setDatosMes(p => ({
+          ...p,
+          [mesAbierto]: {
+            reportes:   rRes.data || [],
+            calendario: calRes.data?.calendario || {},
+          },
+        }));
+      })
+      .catch(e => console.error("Error recargando mes:", e))
+      .finally(() => setLoadingMes(null));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datosMes, mesAbierto]);
 
   if (loading) return <div className="hint">Cargando historial...</div>;
   if (años.length===0) return <div className="hint">No hay reportes cerrados todavía.</div>;

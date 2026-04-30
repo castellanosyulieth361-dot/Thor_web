@@ -1900,10 +1900,6 @@ function NoPreopActionModal({ colaboradorId, fecha, onClose, onDone }) {
         )}
 
         <div className="row" style={{ marginTop: 14 }}>
-          <button className="mini mini--blue" onClick={enviarAlerta} disabled={loadingAlert}>
-            {loadingAlert ? "Enviando..." : "Enviar alerta al trabajador"}
-          </button>
-
           <button className="mini" onClick={marcarNa} disabled={loadingNa}>
             {loadingNa ? "Guardando..." : "N/A"}
           </button>
@@ -2523,7 +2519,16 @@ function Alertas() {
                           className="mini mini--blue"
                           onClick={() => setSelected(a)}
                         >
-                          Abrir
+                          Ver detalle
+                        </button>
+                        <button
+                          className="mini"
+                          onClick={() => {
+                            setSelectedFallo(a);
+                            setGestionOpen(true);
+                          }}
+                        >
+                          Gestionar
                         </button>
                       </div>
                     </div>

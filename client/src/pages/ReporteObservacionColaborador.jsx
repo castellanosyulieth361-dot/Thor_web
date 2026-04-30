@@ -215,15 +215,57 @@ function FormularioReporte() {
 
 function InstructivoColaborador() {
   return (
-    <div style={{
-      padding: 20, background: "#f8fafc",
-      borderRadius: 12, border: "1px solid #e5e7eb",
-      color: "#374151", lineHeight: 1.8, fontSize: 14,
-    }}>
-      <p style={{ color: "#64748b", fontStyle: "italic" }}>
-        Aquí irá el instructivo oficial que nos compartas.
-        Puedes escribirlo y lo agregamos en la siguiente sesión.
-      </p>
+    <div className="box">
+      <h3 className="box__title">Instructivo para Diligenciar Reportes de Observación</h3>
+      <div style={{
+        marginTop: 16, padding: 20, background: "#f8fafc",
+        borderRadius: 12, border: "1px solid #e5e7eb",
+        color: "#374151", lineHeight: 1.8, fontSize: 14,
+      }}>
+
+        <h4 style={{ fontWeight: 800, marginTop: 16 }}>Situacion Observada</h4>
+        <ul>
+          <li><b>Incidente:</b> Señale esta situación si se ha presentado un evento relacionado con el trabajo en el cual ocurrio o pudo ocurrir un error o falla en el producto.</li>
+          <li><b>Acto Seguro:</b> Indique esta situación si el trabajador realizó un acto de manera segura o apropiada, evitando asi la ocurrencia de un impacto ambiental negativo o la generación de un incumplimiento contractual. </li>
+          <li><b>Acto Inseguro:</b> Indique esta situación si el trabajador realizó un acto de manera insegura o inapropiada, que facilita así la ocurrencia de un impacto ambiental negativo o la generación de un incumplimiento contractual.</li>
+          <li><b>Condicion Segura:</b> Señale esta situación si el lugar de trabajo no presenta riesgos controlados, evitando impactos ambientales o el incumplimiento de parametros técnicos.</li>
+          <li><b>Condición Insegura:</b> Señale esta situación si el lugar de trabajo presenta riesgos no controlados y que podrían generar impacto ambiental o incumplimiento en parámetros técnicos. </li>
+
+          <li><b>Impacto Ambiental:</b> Señale si la situación generó alguna alteración, modificación o cambio eb el ambiente o en alguno de sus componentes, positivo o negativo
+            De cierta magnitud y complejidad. Ejemplo derrame e hidrocarburos, derrame o escape de sustancias quimicas, escape de un gas comprimido, residuos dispuestos de forma inadecuada, daños en tuberias, perdidas de agua por daño en sistema hidráulico.
+          </li>
+          <li><b>Error de Información técnica en documento:</b> Indique esta opción si se encuentra algún error en la información plasmada en los documentos entregados para la fabricación del producto. </li>
+          <li><b>Incumplimiento de parametros Tecnicos(PNC):</b> Indique esta opción si se presentan incumplimiento durante el proceso de fabricación. </li>
+          <li>También pueden ser para reporte de producto no conforme (PNC). En caso de seleccionar esta casilla, asegure que se marcan las disposiciones del PNC en el plan de acción del reporte de observación. Cualquiera que sea el tratamiento por favor tenga en cuenta el procedimiento PRO-QAQC-099 CONTROL DE PRODUCTO NO CONFORME. </li></ul>
+
+        <h4 style={{ fontWeight: 800, marginTop: 16 }}>Tipos de situación</h4>
+        <ul>
+          <li>Incidente</li>
+          <li>Impacto Ambiental</li>
+          <li>Error de Información Técnica en el Documento</li>
+          <li>Incumplimiento de Parámetros Técnicos (PNC)</li>
+          <li>Acto Seguro</li>
+          <li>Acto Inseguro</li>
+          <li>Condición Segura</li>     
+        </ul>
+
+        <h4 style={{ fontWeight: 800, marginTop: 16 }}>Tipos de acción administrativa</h4>
+        <ul>
+          <li>R — Reparación / Reproceso</li>
+          <li>R1 — Reclasificación</li>
+          <li>LB — Liberación Bajo Concesión</li>
+          <li>RE — Rechazo / Descarte</li>
+          <li>C — Cumplió</li>     
+        </ul>
+
+        <h4 style={{ fontWeight: 800, marginTop: 16 }}>Descripción de la Situación.</h4>
+        Describa detalladamente la situación observada, Especifique los beneficios o consecuencias que se pueden presentar o que se presentaron debido a la situación observada y finalmente, indique la causa raíz por la cual se presento la situación.
+
+        <h4 style={{ fontWeight: 800, marginTop: 16 }}>Acciones Realizadas o Sugeridas.</h4>
+        Defina que acciones realizó o se deben realizar para corregir o ratificar la situacion observada.
+        <br />
+        <b>NOTA:</b>Este formato es una herramienta vital para registrar sus observaciones y para resumir las acciones correctivas a implementar en el plan de accion y contribuir con el mejoramiento continuo de THOR HORIZON APEX S.A.S.
+      </div>
     </div>
   );
 }

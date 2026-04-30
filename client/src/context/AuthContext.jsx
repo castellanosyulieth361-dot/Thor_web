@@ -14,8 +14,13 @@ export function AuthProvider({ children }) {
   const isAuthed = Boolean(token);
 
   useEffect(() => {
-    if (token) localStorage.setItem("token", token);
-    else localStorage.removeItem("token");
+    if (token) {
+      localStorage.setItem("token", token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      localStorage.removeItem("token");
+      delete api.defaults.headers.common['Authorization'];
+    }
   }, [token]);
 
   useEffect(() => {
@@ -24,15 +29,27 @@ export function AuthProvider({ children }) {
   }, [user]);
 
   async function login(numero_documento, password) {
-    const res = await api.post("/auth/login", {
-      numero_documento,
-      password,
-    });
+    try {
+      const res = await api.post("/auth/login", {
+        numero_documento,
+        password,
+      });
 
-    setToken(res.data.token);
-    setUser(res.data.user);
+      const token = res.data.token;
+      
+      // ✅ Usa token manual para /auth/me
+      const profileRes = await api.get("/auth/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setToken(token);
+      setUser(profileRes.data.user);
 
-    return res.data.user;
+      return profileRes.data.user;
+    } catch (err) {
+      console.error('Login error:', err);
+      throw err;
+    }
   }
 
   function logout() {
