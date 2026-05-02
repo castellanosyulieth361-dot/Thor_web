@@ -1,10 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
-import crypto from "crypto"
+import crypto from "crypto";
 import QRCode from "qrcode";
 import { pool } from "../db.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
-
 
 const router = Router();
 
@@ -50,7 +49,6 @@ const controlSchema = z.object({
   accion_final: z.enum(["disponible", "mantenimiento", "dado_baja"]),
 });
 
-
 router.post("/", requireAuth, requireAdmin, async (req, res) => {
   try {
     const data = crearMaquinariaSchema.parse(req.body);
@@ -62,7 +60,7 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
       WHERE serial = $1
       LIMIT 1
       `,
-      [data.serial]
+      [data.serial],
     );
 
     if (existe.rowCount > 0) {
@@ -101,7 +99,7 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
         data.foto_url,
         data.formulario_id,
         qr_token,
-      ]
+      ],
     );
 
     res.status(201).json(r.rows[0]);
@@ -168,7 +166,7 @@ router.get("/", requireAuth, requireAdmin, async (req, res) => {
       ${whereSql}
       ORDER BY m.creado_en DESC
       `,
-      params
+      params,
     );
 
     res.json(r.rows);
@@ -247,7 +245,7 @@ router.get("/colaborador/disponibles", requireAuth, async (req, res) => {
       WHERE ${where.join(" AND ")}
       ORDER BY m.nombre ASC
       `,
-      params
+      params,
     );
 
     res.json(r.rows);
@@ -266,18 +264,19 @@ router.get("/colaborador/qr/:token", requireAuth, async (req, res) => {
        FROM maquinaria m
        JOIN grupos_maquinaria g ON g.id = m.grupo_id
        WHERE m.qr_token = $1`,
-      [token]
+      [token],
     );
 
     const maq = maqRes.rows[0];
-    if (!maq) return res.status(404).json({ message: "Maquinaria no encontrada." });
+    if (!maq)
+      return res.status(404).json({ message: "Maquinaria no encontrada." });
 
     const preopHoy = await pool.query(
       `SELECT id FROM preoperacionales
        WHERE maquinaria_id = $1
          AND DATE(fecha) = CURRENT_DATE
        LIMIT 1`,
-      [maq.id]
+      [maq.id],
     );
 
     res.json({
@@ -303,7 +302,7 @@ router.get("/colaborador/:id", requireAuth, async (req, res) => {
           AND m.dado_baja = FALSE
           AND m.estado = 'disponible'
   `,
-      [id]
+      [id],
     );
 
     const maq = maqRes.rows[0];
@@ -313,7 +312,7 @@ router.get("/colaborador/:id", requireAuth, async (req, res) => {
 
     const formRes = await pool.query(
       `SELECT id, nombre FROM formularios WHERE id = $1`,
-      [maq.formulario_id]
+      [maq.formulario_id],
     );
 
     const preguntasRes = await pool.query(
@@ -324,7 +323,7 @@ router.get("/colaborador/:id", requireAuth, async (req, res) => {
         AND activa = TRUE
       ORDER BY orden ASC
       `,
-      [maq.formulario_id]
+      [maq.formulario_id],
     );
 
     res.json({
@@ -360,7 +359,7 @@ router.get("/colaborador/:id/detalle", requireAuth, async (req, res) => {
       WHERE m.id = $1
         AND m.dado_baja = FALSE
       `,
-      [id]
+      [id],
     );
 
     const maq = maqRes.rows[0];
@@ -396,7 +395,7 @@ router.get("/colaborador/:id/historial", requireAuth, async (req, res) => {
       FROM maquinaria_historial h
       WHERE h.maquinaria_id = $1
       `,
-      [id]
+      [id],
     );
 
     const eventos = await pool.query(
@@ -414,7 +413,7 @@ router.get("/colaborador/:id/historial", requireAuth, async (req, res) => {
       FROM maquinaria_eventos e
       WHERE e.maquinaria_id = $1
       `,
-      [id]
+      [id],
     );
 
     const bajas = await pool.query(
@@ -432,7 +431,7 @@ router.get("/colaborador/:id/historial", requireAuth, async (req, res) => {
       FROM maquinaria_baja b
       WHERE b.maquinaria_id = $1
       `,
-      [id]
+      [id],
     );
 
     const combinado = [
@@ -448,12 +447,15 @@ router.get("/colaborador/:id/historial", requireAuth, async (req, res) => {
   }
 });
 
-router.get("/colaborador/:id/preoperacionales", requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
+router.get(
+  "/colaborador/:id/preoperacionales",
+  requireAuth,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    const r = await pool.query(
-      `
+      const r = await pool.query(
+        `
       SELECT
         p.id,
         p.fecha,
@@ -470,16 +472,16 @@ router.get("/colaborador/:id/preoperacionales", requireAuth, async (req, res) =>
       WHERE p.maquinaria_id = $1
       ORDER BY p.fecha DESC
       `,
-      [id]
-    );
+        [id],
+      );
 
-    res.json(r.rows);
-  } catch (err) {
-    console.error("ERROR preoperacionales maquinaria colaborador:", err);
-    res.status(500).json({ message: "Error cargando preoperacionales." });
-  }
-});
-
+      res.json(r.rows);
+    } catch (err) {
+      console.error("ERROR preoperacionales maquinaria colaborador:", err);
+      res.status(500).json({ message: "Error cargando preoperacionales." });
+    }
+  },
+);
 
 /* =========================
    DETALLE MAQUINARIA
@@ -495,7 +497,7 @@ router.get("/:id", requireAuth, requireAdmin, async (req, res) => {
       JOIN grupos_maquinaria g ON g.id = m.grupo_id
       WHERE m.id = $1
       `,
-      [id]
+      [id],
     );
 
     const maq = maqRes.rows[0];
@@ -505,7 +507,7 @@ router.get("/:id", requireAuth, requireAdmin, async (req, res) => {
 
     const formRes = await pool.query(
       `SELECT id, nombre FROM formularios WHERE id = $1`,
-      [maq.formulario_id]
+      [maq.formulario_id],
     );
 
     const preguntasRes = await pool.query(
@@ -515,7 +517,7 @@ router.get("/:id", requireAuth, requireAdmin, async (req, res) => {
       WHERE formulario_id = $1
       ORDER BY orden ASC
       `,
-      [maq.formulario_id]
+      [maq.formulario_id],
     );
 
     const qrUrl = `${process.env.BASE_URL}/preoperacional/${maq.qr_token}`;
@@ -543,7 +545,7 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res) => {
 
     const maqRes = await pool.query(
       `SELECT estado FROM maquinaria WHERE id = $1`,
-      [id]
+      [id],
     );
 
     const maq = maqRes.rows[0];
@@ -565,7 +567,7 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res) => {
         AND id <> $2
       LIMIT 1
       `,
-      [data.serial, id]
+      [data.serial, id],
     );
 
     if (duplicado.rowCount > 0) {
@@ -594,13 +596,15 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res) => {
         data.grupo_id,
         data.foto_url,
         id,
-      ]
+      ],
     );
 
     res.json(r.rows[0]);
   } catch (err) {
     if (err?.name === "ZodError") {
-      return res.status(400).json({ message: "Datos inválidos", issues: err.issues });
+      return res
+        .status(400)
+        .json({ message: "Datos inválidos", issues: err.issues });
     }
     console.error("ERROR editando maquinaria:", err);
     res.status(500).json({ message: "Error actualizando maquinaria." });
@@ -613,12 +617,13 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res) => {
 router.post("/:id/baja", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { motivo, foto_url, codigo_confirmacion } = bajaSchema.parse(req.body);
-
-    const maqRes = await pool.query(
-      `SELECT id FROM maquinaria WHERE id = $1`,
-      [id]
+    const { motivo, foto_url, codigo_confirmacion } = bajaSchema.parse(
+      req.body,
     );
+
+    const maqRes = await pool.query(`SELECT id FROM maquinaria WHERE id = $1`, [
+      id,
+    ]);
 
     if (maqRes.rowCount === 0) {
       return res.status(404).json({ message: "Maquinaria no existe." });
@@ -632,7 +637,7 @@ router.post("/:id/baja", requireAuth, requireAdmin, async (req, res) => {
           fecha_baja = CURRENT_DATE
       WHERE id = $1
       `,
-      [id]
+      [id],
     );
 
     await pool.query(
@@ -647,7 +652,7 @@ router.post("/:id/baja", requireAuth, requireAdmin, async (req, res) => {
     actualizado_por = EXCLUDED.actualizado_por,
     actualizado_en = NOW()
   `,
-      [id, motivo, req.user.id]
+      [id, motivo, req.user.id],
     );
 
     await pool.query(
@@ -663,7 +668,7 @@ router.post("/:id/baja", requireAuth, requireAdmin, async (req, res) => {
         creado_por = EXCLUDED.creado_por,
         creado_en = NOW()
       `,
-      [id, motivo, foto_url, codigo_confirmacion, req.user.id]
+      [id, motivo, foto_url, codigo_confirmacion, req.user.id],
     );
 
     await pool.query(
@@ -672,7 +677,7 @@ router.post("/:id/baja", requireAuth, requireAdmin, async (req, res) => {
       (maquinaria_id, usuario_id, accion, descripcion)
       VALUES ($1, $2, 'dado_baja', $3)
       `,
-      [id, req.user.id, `Maquinaria dada de baja. Motivo: ${motivo}`]
+      [id, req.user.id, `Maquinaria dada de baja. Motivo: ${motivo}`],
     );
 
     res.json({ ok: true, message: "Maquinaria dada de baja correctamente." });
@@ -680,7 +685,7 @@ router.post("/:id/baja", requireAuth, requireAdmin, async (req, res) => {
     if (err?.name === "ZodError") {
       return res.status(400).json({
         message: "Datos Invalidos",
-        issues: err.issues
+        issues: err.issues,
       });
     }
 
@@ -711,7 +716,7 @@ router.get("/:id/historial", requireAuth, requireAdmin, async (req, res) => {
       FROM maquinaria_historial h
       WHERE h.maquinaria_id = $1
       `,
-      [id]
+      [id],
     );
 
     const eventos = await pool.query(
@@ -729,7 +734,7 @@ router.get("/:id/historial", requireAuth, requireAdmin, async (req, res) => {
       FROM maquinaria_eventos e
       WHERE e.maquinaria_id = $1
       `,
-      [id]
+      [id],
     );
 
     const bajas = await pool.query(
@@ -747,7 +752,7 @@ router.get("/:id/historial", requireAuth, requireAdmin, async (req, res) => {
       FROM maquinaria_baja b
       WHERE b.maquinaria_id = $1
       `,
-      [id]
+      [id],
     );
 
     const combinado = [
@@ -766,12 +771,16 @@ router.get("/:id/historial", requireAuth, requireAdmin, async (req, res) => {
 /* =========================
    TODOS LOS PREOPERACIONALES
 ========================= */
-router.get("/:id/preoperacionales", requireAuth, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
+router.get(
+  "/:id/preoperacionales",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    const r = await pool.query(
-      `
+      const r = await pool.query(
+        `
       SELECT
         p.id,
         p.fecha,
@@ -788,31 +797,36 @@ router.get("/:id/preoperacionales", requireAuth, requireAdmin, async (req, res) 
       WHERE p.maquinaria_id = $1
       ORDER BY p.fecha DESC
       `,
-      [id]
-    );
+        [id],
+      );
 
-    res.json(r.rows);
-  } catch (err) {
-    console.error("ERROR listando preoperacionales maquinaria:", err);
-    res.status(500).json({ message: "Error cargando preoperacionales." });
-  }
-});
+      res.json(r.rows);
+    } catch (err) {
+      console.error("ERROR listando preoperacionales maquinaria:", err);
+      res.status(500).json({ message: "Error cargando preoperacionales." });
+    }
+  },
+);
 
 /* =========================
    DETALLE POR DIA
 ========================= */
-router.get("/:id/preoperacionales/dia", requireAuth, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { date } = req.query;
+router.get(
+  "/:id/preoperacionales/dia",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { date } = req.query;
 
-    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      return res.status(400).json({ message: "Fecha inválida." });
-    }
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return res.status(400).json({ message: "Fecha inválida." });
+      }
 
-    // 1. Preoperacional exacto del día consultado
-    const preRes = await pool.query(
-      `
+      // 1. Preoperacional exacto del día consultado
+      const preRes = await pool.query(
+        `
       SELECT
         p.id,
         p.fecha,
@@ -828,15 +842,15 @@ router.get("/:id/preoperacionales/dia", requireAuth, requireAdmin, async (req, r
         AND DATE(p.fecha) = $2::date
       LIMIT 1
       `,
-      [id, date]
-    );
+        [id, date],
+      );
 
-    const pre = preRes.rows[0] || null;
+      const pre = preRes.rows[0] || null;
 
-    // 2. Respuestas del preoperacional exacto del día, si existe
-    const respuestasRes = pre
-      ? await pool.query(
-        `
+      // 2. Respuestas del preoperacional exacto del día, si existe
+      const respuestasRes = pre
+        ? await pool.query(
+            `
           SELECT
             r.id,
             q.id AS pregunta_id,
@@ -849,13 +863,13 @@ router.get("/:id/preoperacionales/dia", requireAuth, requireAdmin, async (req, r
           WHERE r.preoperacional_id = $1
           ORDER BY q.orden ASC
           `,
-        [pre.id]
-      )
-      : { rows: [] };
+            [pre.id],
+          )
+        : { rows: [] };
 
-    // 3. N/A del día
-    const novedadRes = await pool.query(
-      `
+      // 3. N/A del día
+      const novedadRes = await pool.query(
+        `
       SELECT observacion AS motivo
       FROM maquinaria_estado_dia
       WHERE maquinaria_id = $1
@@ -863,12 +877,12 @@ router.get("/:id/preoperacionales/dia", requireAuth, requireAdmin, async (req, r
         AND estado = 'na'
       LIMIT 1
       `,
-      [id, date]
-    );
+        [id, date],
+      );
 
-    // 4. Mantenimiento del día
-    const mantenimientoRes = await pool.query(
-      `
+      // 4. Mantenimiento del día
+      const mantenimientoRes = await pool.query(
+        `
       SELECT descripcion
       FROM maquinaria_eventos
       WHERE maquinaria_id = $1
@@ -877,12 +891,12 @@ router.get("/:id/preoperacionales/dia", requireAuth, requireAdmin, async (req, r
       ORDER BY creado_en DESC
       LIMIT 1
       `,
-      [id, date]
-    );
+        [id, date],
+      );
 
-    // 5. Control exacto del día
-    const controlRes = await pool.query(
-      `
+      // 5. Control exacto del día
+      const controlRes = await pool.query(
+        `
       SELECT descripcion, responsable, foto_url, accion_final
       FROM maquinaria_eventos
       WHERE maquinaria_id = $1
@@ -891,14 +905,14 @@ router.get("/:id/preoperacionales/dia", requireAuth, requireAdmin, async (req, r
       ORDER BY creado_en DESC
       LIMIT 1
       `,
-      [id, date]
-    );
+        [id, date],
+      );
 
-    const control = controlRes.rows[0] || null;
+      const control = controlRes.rows[0] || null;
 
-    // 6. Buscar el último fallo sin resolver anterior o igual a la fecha consultada
-    const falloBaseRes = await pool.query(
-      `
+      // 6. Buscar el último fallo sin resolver anterior o igual a la fecha consultada
+      const falloBaseRes = await pool.query(
+        `
       SELECT
         p.id AS preoperacional_id,
         DATE(p.fecha) AS fecha_fallo,
@@ -924,15 +938,15 @@ router.get("/:id/preoperacionales/dia", requireAuth, requireAdmin, async (req, r
       ORDER BY DATE(p.fecha) DESC
       LIMIT 1
       `,
-      [id, date]
-    );
+        [id, date],
+      );
 
-    const falloBase = falloBaseRes.rows[0] || null;
+      const falloBase = falloBaseRes.rows[0] || null;
 
-    // 7. Respuestas del fallo base
-    const respuestasFalloBaseRes = falloBase
-      ? await pool.query(
-        `
+      // 7. Respuestas del fallo base
+      const respuestasFalloBaseRes = falloBase
+        ? await pool.query(
+            `
           SELECT
             r.id,
             q.id AS pregunta_id,
@@ -945,56 +959,61 @@ router.get("/:id/preoperacionales/dia", requireAuth, requireAdmin, async (req, r
           WHERE r.preoperacional_id = $1
           ORDER BY q.orden ASC
           `,
-        [falloBase.preoperacional_id]
-      )
-      : { rows: [] };
+            [falloBase.preoperacional_id],
+          )
+        : { rows: [] };
 
-    res.json({
-      preoperacional: pre
-        ? {
-          id: pre.id,
-          fecha_texto: pre.fecha_texto,
-          usuario_nombre: pre.usuario_nombre,
-        }
-        : null,
-      formulario: pre
-        ? {
-          id: pre.formulario_id,
-          nombre: pre.formulario_nombre,
-        }
-        : null,
-      respuestas: respuestasRes.rows || [],
-      novedad: novedadRes.rows[0] || null,
-      mantenimiento: mantenimientoRes.rows[0] || null,
-      control,
-      fallo_base: falloBase
-        ? {
-          preoperacional_id: falloBase.preoperacional_id,
-          fecha_fallo: falloBase.fecha_fallo,
-          fecha_texto: falloBase.fecha_texto,
-          usuario_nombre: falloBase.usuario_nombre,
-          formulario_id: falloBase.formulario_id,
-          formulario_nombre: falloBase.formulario_nombre,
-        }
-        : null,
-      respuestas_fallo_base: respuestasFalloBaseRes.rows || [],
-    });
-  } catch (err) {
-    console.error("ERROR detalle por día maquinaria:", err);
-    res.status(500).json({ message: "Error cargando detalle del día." });
-  }
-});
+      res.json({
+        preoperacional: pre
+          ? {
+              id: pre.id,
+              fecha_texto: pre.fecha_texto,
+              usuario_nombre: pre.usuario_nombre,
+            }
+          : null,
+        formulario: pre
+          ? {
+              id: pre.formulario_id,
+              nombre: pre.formulario_nombre,
+            }
+          : null,
+        respuestas: respuestasRes.rows || [],
+        novedad: novedadRes.rows[0] || null,
+        mantenimiento: mantenimientoRes.rows[0] || null,
+        control,
+        fallo_base: falloBase
+          ? {
+              preoperacional_id: falloBase.preoperacional_id,
+              fecha_fallo: falloBase.fecha_fallo,
+              fecha_texto: falloBase.fecha_texto,
+              usuario_nombre: falloBase.usuario_nombre,
+              formulario_id: falloBase.formulario_id,
+              formulario_nombre: falloBase.formulario_nombre,
+            }
+          : null,
+        respuestas_fallo_base: respuestasFalloBaseRes.rows || [],
+      });
+    } catch (err) {
+      console.error("ERROR detalle por día maquinaria:", err);
+      res.status(500).json({ message: "Error cargando detalle del día." });
+    }
+  },
+);
 
 /* =========================
    GUARDAR GESTION ADMINISTRATIVA
 ========================= */
-router.post("/:id/eventos/control", requireAuth, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const data = controlSchema.parse(req.body);
+router.post(
+  "/:id/eventos/control",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = controlSchema.parse(req.body);
 
-    await pool.query(
-      `
+      await pool.query(
+        `
   INSERT INTO maquinaria_eventos
   (
     maquinaria_id,
@@ -1009,29 +1028,29 @@ router.post("/:id/eventos/control", requireAuth, requireAdmin, async (req, res) 
   )
   VALUES ($1, $2, $3::date, 'control', $4, $5, $6, $7::varchar, $8)
   `,
-      [
-        id,
-        data.preoperacional_id ?? null,
-        data.fecha,
-        data.medidas_control,
-        data.responsable,
-        data.foto_control_url ?? null,
-        data.accion_final,
-        req.user.id,
-      ]
-    );
-    await pool.query(
-      `
+        [
+          id,
+          data.preoperacional_id ?? null,
+          data.fecha,
+          data.medidas_control,
+          data.responsable,
+          data.foto_control_url ?? null,
+          data.accion_final,
+          req.user.id,
+        ],
+      );
+      await pool.query(
+        `
       UPDATE maquinaria
       SET estado = $1::varchar,
           dado_baja = CASE WHEN $1::varchar = 'dado_baja' THEN TRUE ELSE dado_baja END
       WHERE id = $2
      `,
-      [data.accion_final, id]
-    );
+        [data.accion_final, id],
+      );
 
-    await pool.query(
-      `
+      await pool.query(
+        `
     INSERT INTO maquinaria_estado_dia
     (maquinaria_id, fecha, estado, observacion, actualizado_por)
     VALUES ($1, $2::date, $3::varchar, $4, $5)
@@ -1042,43 +1061,53 @@ router.post("/:id/eventos/control", requireAuth, requireAdmin, async (req, res) 
       actualizado_por = EXCLUDED.actualizado_por,
       actualizado_en = NOW()
   `,
-      [id, data.fecha, data.accion_final, data.medidas_control, req.user.id]
-    );
+        [id, data.fecha, data.accion_final, data.medidas_control, req.user.id],
+      );
 
-    await pool.query(
-      `
+      await pool.query(
+        `
       INSERT INTO maquinaria_historial (maquinaria_id, usuario_id, accion, descripcion)
       VALUES ($1, $2, $3::varchar, $4)
       `,
-      [id, req.user.id, data.accion_final, data.medidas_control]
-    );
+        [id, req.user.id, data.accion_final, data.medidas_control],
+      );
 
-    // si da baja desde gestión roja, registrar soporte mínimo
-    if (data.accion_final === "dado_baja") {
-      await pool.query(
-        `
+      // si da baja desde gestión roja, registrar soporte mínimo
+      if (data.accion_final === "dado_baja") {
+        await pool.query(
+          `
         UPDATE maquinaria
         SET dado_baja = TRUE
         WHERE id = $1
         `,
-        [id]
-      );
-    }
+          [id],
+        );
+      }
 
-    res.json({ ok: true, message: "Gestión guardada correctamente." });
-  } catch (err) {
-    if (err?.name === "ZodError") {
-      return res.status(400).json({ message: "Datos inválidos", issues: err.issues });
+      res.json({ ok: true, message: "Gestión guardada correctamente." });
+    } catch (err) {
+      if (err?.name === "ZodError") {
+        return res
+          .status(400)
+          .json({ message: "Datos inválidos", issues: err.issues });
+      }
+      console.error("ERROR guardando gestión maquinaria:", err);
+      res.status(500).json({ message: "Error guardando gestión." });
     }
-    console.error("ERROR guardando gestión maquinaria:", err);
-    res.status(500).json({ message: "Error guardando gestión." });
-  }
-});
-
+  },
+);
 
 const estadoDiaSchema = z.object({
   fecha: z.string().min(10),
-  estado: z.enum(["ok", "fallo", "na", "mantenimiento", "no_disponible", "sin_registro", "dado_baja"]),
+  estado: z.enum([
+    "ok",
+    "fallo",
+    "na",
+    "mantenimiento",
+    "no_disponible",
+    "sin_registro",
+    "dado_baja",
+  ]),
   observacion: z.string().nullable().optional(),
 });
 
@@ -1089,7 +1118,7 @@ router.patch("/:id/estado", requireAuth, requireAdmin, async (req, res) => {
 
     const maqRes = await pool.query(
       `SELECT id, estado FROM maquinaria WHERE id = $1`,
-      [id]
+      [id],
     );
 
     const maq = maqRes.rows[0];
@@ -1114,7 +1143,7 @@ router.patch("/:id/estado", requireAuth, requireAdmin, async (req, res) => {
       WHERE id = $3
       RETURNING *
       `,
-      [estado, dadoBaja, id]
+      [estado, dadoBaja, id],
     );
 
     await pool.query(
@@ -1123,7 +1152,7 @@ router.patch("/:id/estado", requireAuth, requireAdmin, async (req, res) => {
       (maquinaria_id, usuario_id, accion, descripcion)
       VALUES ($1, $2, $3, $4)
       `,
-      [id, req.user.id, estado, descripcion || null]
+      [id, req.user.id, estado, descripcion || null],
     );
 
     await pool.query(
@@ -1138,7 +1167,7 @@ router.patch("/:id/estado", requireAuth, requireAdmin, async (req, res) => {
         actualizado_por = EXCLUDED.actualizado_por,
         actualizado_en = NOW()
       `,
-      [id, hoy, estado, descripcion || null, req.user.id]
+      [id, hoy, estado, descripcion || null, req.user.id],
     );
 
     res.json(r.rows[0]);
@@ -1155,7 +1184,6 @@ router.patch("/:id/estado", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-
 router.post("/:id/estado-dia", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -1163,7 +1191,7 @@ router.post("/:id/estado-dia", requireAuth, requireAdmin, async (req, res) => {
 
     const maqRes = await pool.query(
       `SELECT estado FROM maquinaria WHERE id = $1`,
-      [id]
+      [id],
     );
 
     const maq = maqRes.rows[0];
@@ -1189,7 +1217,7 @@ router.post("/:id/estado-dia", requireAuth, requireAdmin, async (req, res) => {
         actualizado_por = EXCLUDED.actualizado_por,
         actualizado_en = NOW()
       `,
-      [id, data.fecha, data.estado, data.observacion ?? null, req.user.id]
+      [id, data.fecha, data.estado, data.observacion ?? null, req.user.id],
     );
 
     res.json({ ok: true, message: "Estado del dia actualizado el dia de hoy" });
@@ -1200,7 +1228,6 @@ router.post("/:id/estado-dia", requireAuth, requireAdmin, async (req, res) => {
         issues: err.issues,
       });
     }
-
 
     console.error("ERROR actualizando estado del día:", err);
     res.status(500).json({ message: "Error actualizando estado del día." });
@@ -1231,7 +1258,7 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
       FROM maquinaria
       WHERE id = $1
       `,
-      [id]
+      [id],
     );
 
     if (maquinariaRes.rowCount === 0) {
@@ -1263,7 +1290,8 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
       bajaFecha.setHours(0, 0, 0, 0);
     }
 
-    const start = startDate < creadoEn ? new Date(creadoEn) : new Date(startDate);
+    const start =
+      startDate < creadoEn ? new Date(creadoEn) : new Date(startDate);
     const startKey = start.toISOString().slice(0, 10);
 
     // =============================================
@@ -1276,7 +1304,7 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
       WHERE maquinaria_id = $1
       ORDER BY fecha ASC, actualizado_en ASC
       `,
-      [id]
+      [id],
     );
 
     const preopRes = await pool.query(
@@ -1285,7 +1313,7 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
       FROM preoperacionales p
       WHERE p.maquinaria_id = $1
       `,
-      [id]
+      [id],
     );
 
     const controlRes = await pool.query(
@@ -1296,7 +1324,7 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
         AND tipo = 'control'
       ORDER BY fecha ASC, creado_en ASC
       `,
-      [id]
+      [id],
     );
 
     // =============================================
@@ -1311,7 +1339,7 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
       ORDER BY fecha DESC
       LIMIT 1
       `,
-      [id, startKey]
+      [id, startKey],
     );
 
     const falloPrevioRes = await pool.query(
@@ -1332,7 +1360,7 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
       ORDER BY DATE(p.fecha) DESC
       LIMIT 1
       `,
-      [id, startKey]
+      [id, startKey],
     );
 
     // =============================================
@@ -1343,24 +1371,27 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
     const controlMap = {};
 
     estadosRes.rows.forEach((r) => {
-      const key = r.fecha instanceof Date
-        ? r.fecha.toISOString().slice(0, 10)
-        : String(r.fecha).slice(0, 10);
+      const key =
+        r.fecha instanceof Date
+          ? r.fecha.toISOString().slice(0, 10)
+          : String(r.fecha).slice(0, 10);
       if (!estadosMap[key]) estadosMap[key] = [];
       estadosMap[key].push(r.estado);
     });
 
     preopRes.rows.forEach((r) => {
-      const key = r.fecha instanceof Date
-        ? r.fecha.toISOString().slice(0, 10)
-        : String(r.fecha).slice(0, 10);
+      const key =
+        r.fecha instanceof Date
+          ? r.fecha.toISOString().slice(0, 10)
+          : String(r.fecha).slice(0, 10);
       preopMap[key] = r.cumple_general ? "ok" : "fallo";
     });
 
     controlRes.rows.forEach((r) => {
-      const key = r.fecha instanceof Date
-        ? r.fecha.toISOString().slice(0, 10)
-        : String(r.fecha).slice(0, 10);
+      const key =
+        r.fecha instanceof Date
+          ? r.fecha.toISOString().slice(0, 10)
+          : String(r.fecha).slice(0, 10);
       controlMap[key] = r.accion_final;
     });
 
@@ -1375,9 +1406,9 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
     }
 
     let falloActivoDesde = falloPrevioRes.rows[0]?.fecha_fallo
-      ? (falloPrevioRes.rows[0].fecha_fallo instanceof Date
+      ? falloPrevioRes.rows[0].fecha_fallo instanceof Date
         ? falloPrevioRes.rows[0].fecha_fallo.toISOString().slice(0, 10)
-        : String(falloPrevioRes.rows[0].fecha_fallo).slice(0, 10))
+        : String(falloPrevioRes.rows[0].fecha_fallo).slice(0, 10)
       : null;
 
     let estadoPersistente = estadoPrevioRes.rows[0]?.estado ?? null;
@@ -1432,19 +1463,25 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
       }
 
       // 5. Arrastre de fallo activo
-      if (!estadosDia.length && falloActivoDesde && dateKey > falloActivoDesde) {
+      if (
+        !estadosDia.length &&
+        falloActivoDesde &&
+        dateKey > falloActivoDesde
+      ) {
         estadosDia = ["fallo"];
       }
 
       // 5b. Arrastre de no_disponible / mantenimiento (solo si no hay fallo pendiente)
       if (!estadosDia.length && estadoPersistente && !falloSinResolver) {
-        if (estadoPersistente === "no_disponible" || estadoPersistente === "mantenimiento") {
+        if (
+          estadoPersistente === "no_disponible" ||
+          estadoPersistente === "mantenimiento"
+        ) {
           estadosDia = [estadoPersistente];
         }
       }
 
-
-      // 6. Estado manual del administrador 
+      // 6. Estado manual del administrador
 
       // Bloque 6 completo corregido
       if (ultimoEstadoManual) {
@@ -1452,11 +1489,17 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
         const hayPreopOkEseDia = preopMap[dateKey] === "ok";
         const hayControlEseDia = Boolean(controlMap[dateKey]);
         const esNoDispAutomatico =
-          ultimoEstadoManual === "no_disponible" && hayFalloEseDia && !hayControlEseDia;
+          ultimoEstadoManual === "no_disponible" &&
+          hayFalloEseDia &&
+          !hayControlEseDia;
 
         if (hayPreopOkEseDia) {
           // El bloque 1 ya asignó ok — no pisar con el estado manual
-        } else if (falloActivoDesde && dateKey > falloActivoDesde && !hayControlEseDia) {
+        } else if (
+          falloActivoDesde &&
+          dateKey > falloActivoDesde &&
+          !hayControlEseDia
+        ) {
           // Fallo arrastrado vigente — no dejar que un estado manual lo tape
         } else if (esNoDispAutomatico) {
           falloActivoDesde = dateKey;
@@ -1468,7 +1511,11 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
           estadoPersistente = controlMap[dateKey];
         } else {
           estadosDia = [ultimoEstadoManual];
-          if (["disponible", "mantenimiento", "dado_baja", "na", "ok"].includes(ultimoEstadoManual)) {
+          if (
+            ["disponible", "mantenimiento", "dado_baja", "na", "ok"].includes(
+              ultimoEstadoManual,
+            )
+          ) {
             falloActivoDesde = null;
             falloSinResolver = false;
           }
@@ -1492,7 +1539,11 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
 
       // Actualizar estado persistente
       const estadoFinal = estadosUnicos[estadosUnicos.length - 1];
-      if (["no_disponible", "mantenimiento", "disponible", "dado_baja"].includes(estadoFinal)) {
+      if (
+        ["no_disponible", "mantenimiento", "disponible", "dado_baja"].includes(
+          estadoFinal,
+        )
+      ) {
         estadoPersistente = estadoFinal;
       } else if (estadoFinal === "ok") {
         estadoPersistente = "disponible";
@@ -1508,6 +1559,21 @@ router.get("/:id/calendario", requireAuth, requireAdmin, async (req, res) => {
     console.error("ERROR calendario maquinaria:", err);
     res.status(500).json({ message: "Error cargando calendario." });
   }
+});
+
+// ─── Verificar BASE_URL configurada ───────────────────────────────────────────
+router.get("/admin/base-url", requireAuth, requireAdmin, async (req, res) => {
+  const baseUrl = process.env.BASE_URL || "(no configurada)";
+  const maquinas = await pool.query(
+    `SELECT COUNT(*) FROM maquinaria WHERE dado_baja = false`,
+  );
+  res.json({
+    BASE_URL: baseUrl,
+    total_maquinarias: Number(maquinas.rows[0].count),
+    ejemplo_qr: baseUrl.includes("localhost")
+      ? "⚠️ BASE_URL apunta a localhost - los QR no funcionarán en producción"
+      : `✅ Los QR apuntarán a: ${baseUrl}/preoperacional/<token>`,
+  });
 });
 
 export default router;
