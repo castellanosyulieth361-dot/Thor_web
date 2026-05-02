@@ -131,15 +131,14 @@ router.get(
          u.nombre           AS reportado_por_nombre,
          u.numero_documento AS reportado_por_documento,
          u.cargo            AS reportado_por_cargo,
-         u.rol              AS reportado_por_rol,
-         -- días sin gestión
+         rls.nombre         AS reportado_por_rol,
          EXTRACT(DAY FROM NOW() - ro.creado_en)::int AS dias_abierto,
-         -- última gestión
          (SELECT TO_CHAR(MAX(g.creado_en), 'YYYY-MM-DD HH24:MI')
           FROM reportes_observacion_gestion g
           WHERE g.reporte_id = ro.id) AS ultima_gestion
        FROM reportes_observacion ro
        JOIN usuarios u ON u.id = ro.reportado_por
+       JOIN roles rls ON rls.id = u.role_id
        WHERE ro.estado IN ('abierto', 'en_proceso')
        ORDER BY
          CASE ro.estado WHEN 'abierto' THEN 0 ELSE 1 END,

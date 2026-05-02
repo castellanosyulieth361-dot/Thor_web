@@ -254,11 +254,9 @@ router.get(
       res.json(r.rows);
     } catch (err) {
       console.error("ERROR cargando alertas de no preoperacional:", err);
-      res
-        .status(500)
-        .json({
-          message: "Error cargando alertas de personal sin preoperacional.",
-        });
+      res.status(500).json({
+        message: "Error cargando alertas de personal sin preoperacional.",
+      });
     }
   },
 );
