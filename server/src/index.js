@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import pg from 'pg';
+import pg from "pg";
 
 import authRoutes from "./routes/auth.routes.js";
 import usuariosRoutes from "./routes/usuarios.routes.js";
@@ -19,15 +19,13 @@ import uploadsRoutes from "./routes/uploads.routes.js";
 import alertasRoutes from "./routes/alertas.routes.js";
 import reportesRoutes from "./routes/reportes.routes.js";
 
-
 dotenv.config();
-
 
 const app = express();
 
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === "production") {
   console.log = () => {}; // Silencia console.log en prod
 }
 
@@ -53,12 +51,12 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "http://localhost:5173")
 //   })
 // );
 
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
-
-
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
 
 // ── BODY PARSERS ──────────────────────────────────────────────────────────────
 app.use(express.json({ limit: "10mb" }));
@@ -67,10 +65,12 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // ── RATE LIMITING ─────────────────────────────────────────────────────────────
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 10,                   // máx 10 intentos por IP
+  max: 10, // máx 10 intentos por IP
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "Demasiados intentos de inicio de sesión. Espera 15 minutos." },
+  message: {
+    message: "Demasiados intentos de inicio de sesión. Espera 15 minutos.",
+  },
 });
 
 // ── STATIC ────────────────────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.get("/api/health", (_, res) => res.json({ ok: true }));
 
 // ── RUTAS ─────────────────────────────────────────────────────────────────────
-app.use("/api/auth/login", loginLimiter);   // rate limit solo al login
+app.use("/api/auth/login", loginLimiter); // rate limit solo al login
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/usuarios", usuariosRoutes);
@@ -108,6 +108,22 @@ app.use((err, req, res, next) => {
 // ── ARRANQUE ──────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, "0.0.0.0", () => {
+import { pool } from "./db.js";
+
+async function runMigrations() {
+  try {
+    // Agregar columna reporte_id a mensajes si no existe (para alertas de reportes)
+    await pool.query(`
+      ALTER TABLE mensajes
+      ADD COLUMN IF NOT EXISTS reporte_id INTEGER REFERENCES reportes_observacion(id) ON DELETE CASCADE
+    `);
+    console.log("Migraciones OK");
+  } catch (err) {
+    console.error("Error en migraciones:", err.message);
+  }
+}
+
+app.listen(PORT, "0.0.0.0", async () => {
   console.log(`API en puerto ${PORT}`);
+  await runMigrations();
 });

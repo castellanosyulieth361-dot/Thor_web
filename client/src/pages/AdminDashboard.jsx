@@ -6,12 +6,12 @@ import { useContext } from "react";
 import { createPortal } from "react-dom";
 import { getImageUrl, formatAccion } from "../utils";
 import { Field, Info, FotoInput } from "../components/shared";
-import ReportesObservacion from "./ReportesObservacion"
+import ReportesObservacion from "./ReportesObservacion";
 import "./admin.css";
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState("creacion"); // creacion | colaboradores | equipos | perfil
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false);
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -27,8 +27,9 @@ export default function AdminDashboard() {
         <span></span>
       </button>
 
-
-      {menuOpen && <div className="adm__overlay" onClick={() => setMenuOpen(false)}></div>}
+      {menuOpen && (
+        <div className="adm__overlay" onClick={() => setMenuOpen(false)}></div>
+      )}
 
       <aside className={`adm__side ${menuOpen ? "open" : ""}`}>
         <div className="adm__brand">
@@ -69,13 +70,17 @@ export default function AdminDashboard() {
             Herramientas y equipos
           </button>
 
-          <button 
-          className={`adm__navBtn ${tab === "reportes" ? "is-active" : ""}`}
-          onClick={() => { setTab("reportes"); setMenuOpen(false); }}>
+          <button
+            className={`adm__navBtn ${tab === "reportes" ? "is-active" : ""}`}
+            onClick={() => {
+              setTab("reportes");
+              setMenuOpen(false);
+            }}
+          >
             Reportes de Observación
           </button>
 
-           <button
+          <button
             className={`adm__navBtn ${tab === "alertas" ? "is-active" : ""}`}
             onClick={() => {
               setTab("alertas");
@@ -94,7 +99,6 @@ export default function AdminDashboard() {
           >
             Perfil
           </button>
-         
 
           <button
             className="adm__navBtn2"
@@ -232,7 +236,7 @@ function CrearMaquinaria({ refreshForms, refreshGroups }) {
   }
 
   useEffect(() => {
-    loadData().catch(() => { });
+    loadData().catch(() => {});
   }, [refreshForms, refreshGroups]);
 
   // uploadPhoto eliminado — FotoInput lo maneja internamente
@@ -370,7 +374,11 @@ function CrearMaquinaria({ refreshForms, refreshGroups }) {
           </Field>
 
           <Field label="Foto obligatoria">
-            <FotoInput onUpload={(url) => { if (url) setData((prev) => ({ ...prev, foto_url: url })); }} />
+            <FotoInput
+              onUpload={(url) => {
+                if (url) setData((prev) => ({ ...prev, foto_url: url }));
+              }}
+            />
           </Field>
         </div>
 
@@ -563,7 +571,11 @@ function CrearUsuario() {
           </Field>
 
           <Field label="Foto Obligatoria">
-            <FotoInput onUpload={(url) => { if (url) setData((prev) => ({ ...prev, foto_url: url })); }} />
+            <FotoInput
+              onUpload={(url) => {
+                if (url) setData((prev) => ({ ...prev, foto_url: url }));
+              }}
+            />
           </Field>
         </div>
 
@@ -629,8 +641,7 @@ function CrearPreoperacional({ onCreated }) {
       setMsg({
         type: "err",
         text:
-          e?.response?.data?.message ||
-          "No se pudo crear el preoperacional.",
+          e?.response?.data?.message || "No se pudo crear el preoperacional.",
       });
     } finally {
       setSavingForm(false);
@@ -664,7 +675,11 @@ function CrearPreoperacional({ onCreated }) {
         </div>
 
         {!formId ? (
-          <button className="btn" onClick={crearFormulario} disabled={savingForm}>
+          <button
+            className="btn"
+            onClick={crearFormulario}
+            disabled={savingForm}
+          >
             {savingForm ? "Creando..." : "Crear preoperacional"}
           </button>
         ) : (
@@ -689,10 +704,7 @@ function CrearPreoperacional({ onCreated }) {
             Preoperacional actual: <b>{nombreForm}</b>
           </div>
 
-          <AddPregunta
-            formId={formId}
-            onAdded={() => loadFormulario(formId)}
-          />
+          <AddPregunta formId={formId} onAdded={() => loadFormulario(formId)} />
 
           <div className="list">
             {preguntas.map((p) => (
@@ -712,7 +724,7 @@ function CrearPreoperacional({ onCreated }) {
                     onClick={async () => {
                       await api.patch(
                         `/formularios/${formId}/preguntas/${p.id}/activa`,
-                        { activa: !p.activa }
+                        { activa: !p.activa },
                       );
                       await loadFormulario(formId);
                     }}
@@ -724,7 +736,9 @@ function CrearPreoperacional({ onCreated }) {
             ))}
 
             {preguntas.length === 0 && (
-              <div className="hint">Aún no hay preguntas. Agrega la primera.</div>
+              <div className="hint">
+                Aún no hay preguntas. Agrega la primera.
+              </div>
             )}
           </div>
         </div>
@@ -767,18 +781,17 @@ function AddPregunta({ formId, onAdded }) {
             setSaving(true);
 
             await api.post(`/formularios/${formId}/preguntas`, {
-              enunciado
+              enunciado,
             });
 
             setEnunciado("");
             await onAdded();
 
             setMsg({ type: "ok", text: "Pregunta agregada ✅" });
-
           } catch (e) {
             setMsg({
               type: "err",
-              text: e?.response?.data?.message || "No se pudo agregar."
+              text: e?.response?.data?.message || "No se pudo agregar.",
             });
           } finally {
             setSaving(false);
@@ -817,14 +830,14 @@ function ModificarPreoperacional() {
   }
 
   useEffect(() => {
-    loadAll().catch(() => { });
+    loadAll().catch(() => {});
   }, []);
 
   async function eliminarFormulario() {
     if (!selectedFormId) return;
 
     const confirmar = window.confirm(
-      "¿Seguro que deseas eliminar este preoperacional?"
+      "¿Seguro que deseas eliminar este preoperacional?",
     );
     if (!confirmar) return;
 
@@ -850,10 +863,7 @@ function ModificarPreoperacional() {
         <h3 className="box__title">Modificar preoperacional</h3>
 
         {selectedFormId && (
-          <button
-            className="mini mini--danger"
-            onClick={eliminarFormulario}
-          >
+          <button className="mini mini--danger" onClick={eliminarFormulario}>
             Eliminar
           </button>
         )}
@@ -881,7 +891,6 @@ function ModificarPreoperacional() {
 
       {selectedFormId && (
         <>
-
           <AddPregunta
             formId={selectedFormId}
             onAdded={() => loadFormulario(selectedFormId)}
@@ -941,7 +950,10 @@ function EditarPreguntaRow({ formId, pregunta, onSaved }) {
             setMsg(null);
 
             if (texto.trim().length < 2) {
-              setMsg({ type: "err", text: "La pregunta debe tener al menos 2 caracteres." });
+              setMsg({
+                type: "err",
+                text: "La pregunta debe tener al menos 2 caracteres.",
+              });
               return;
             }
 
@@ -974,11 +986,10 @@ function EditarPreguntaRow({ formId, pregunta, onSaved }) {
             try {
               await api.patch(
                 `/formularios/${formId}/preguntas/${pregunta.id}/activa`,
-                { activa: !pregunta.activa }
+                { activa: !pregunta.activa },
               );
               await onSaved();
-            } catch (e) {
-            }
+            } catch (e) {}
           }}
         >
           {pregunta.activa ? "Activa" : "Inactiva"}
@@ -1002,7 +1013,7 @@ function CrearGrupo({ onCreated }) {
   }
 
   useEffect(() => {
-    loadGrupos().catch(() => { });
+    loadGrupos().catch(() => {});
   }, []);
 
   async function crearGrupo() {
@@ -1171,7 +1182,9 @@ function Colaboradores() {
 
             <div className="card__name">{c.nombre}</div>
             <div className="card__sub">Cargo: {c.cargo || "—"}</div>
-            <div className="card__sub">Documento: {c.numero_documento || "—"}</div>
+            <div className="card__sub">
+              Documento: {c.numero_documento || "—"}
+            </div>
 
             <div className="card__actions">
               <button
@@ -1281,7 +1294,8 @@ function EditarColaboradorBtn({ colaborador, onUpdated }) {
     } catch (e) {
       setMsg({
         type: "err",
-        text: e?.response?.data?.message || "No se pudo actualizar el colaborador.",
+        text:
+          e?.response?.data?.message || "No se pudo actualizar el colaborador.",
       });
     } finally {
       setLoading(false);
@@ -1313,7 +1327,9 @@ function EditarColaboradorBtn({ colaborador, onUpdated }) {
                   <input
                     className="inp"
                     value={data.nombre}
-                    onChange={(e) => setData({ ...data, nombre: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, nombre: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -1321,7 +1337,9 @@ function EditarColaboradorBtn({ colaborador, onUpdated }) {
                   <input
                     className="inp"
                     value={data.cargo}
-                    onChange={(e) => setData({ ...data, cargo: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, cargo: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -1330,7 +1348,9 @@ function EditarColaboradorBtn({ colaborador, onUpdated }) {
                     className="inp"
                     type="date"
                     value={data.fecha_ingreso?.split("T")[0] || ""}
-                    onChange={(e) => setData({ ...data, fecha_ingreso: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, fecha_ingreso: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -1338,7 +1358,9 @@ function EditarColaboradorBtn({ colaborador, onUpdated }) {
                   <input
                     className="inp"
                     value={data.tipo_contrato}
-                    onChange={(e) => setData({ ...data, tipo_contrato: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, tipo_contrato: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -1354,7 +1376,9 @@ function EditarColaboradorBtn({ colaborador, onUpdated }) {
                   <input
                     className="inp"
                     value={data.direccion}
-                    onChange={(e) => setData({ ...data, direccion: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, direccion: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -1362,7 +1386,9 @@ function EditarColaboradorBtn({ colaborador, onUpdated }) {
                   <input
                     className="inp"
                     value={data.numero_documento}
-                    onChange={(e) => setData({ ...data, numero_documento: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, numero_documento: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -1380,7 +1406,9 @@ function EditarColaboradorBtn({ colaborador, onUpdated }) {
                 <Field label="Foto (opcional)">
                   <FotoInput
                     initialUrl={data.foto_url ? getImageUrl(data.foto_url) : ""}
-                    onUpload={(url) => { if (url) setData((prev) => ({ ...prev, foto_url: url })); }}
+                    onUpload={(url) => {
+                      if (url) setData((prev) => ({ ...prev, foto_url: url }));
+                    }}
                   />
                 </Field>
               </div>
@@ -1409,7 +1437,7 @@ function EditarColaboradorBtn({ colaborador, onUpdated }) {
               </div>
             </div>
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );
@@ -1432,9 +1460,12 @@ function ColaboradorCalendarioModal({ colaborador, onClose }) {
       setLoading(true);
       setErr(null);
 
-      const r = await api.get(`/usuarios/${colaborador.id}/preoperacionales/resumen`, {
-        params: { month },
-      });
+      const r = await api.get(
+        `/usuarios/${colaborador.id}/preoperacionales/resumen`,
+        {
+          params: { month },
+        },
+      );
 
       setResumen(r.data?.resumen || {});
       setMinMonth(r.data?.minMonth || defaultMonth);
@@ -1487,7 +1518,9 @@ function ColaboradorCalendarioModal({ colaborador, onClose }) {
   function nextMonth() {
     const [y, m] = month.split("-").map(Number);
     const date = new Date(y, m, 1);
-    setMonth(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
+    setMonth(
+      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
+    );
   }
 
   return (
@@ -1495,10 +1528,14 @@ function ColaboradorCalendarioModal({ colaborador, onClose }) {
       <div className="modal modal--xl">
         <div className="modal__head">
           <div>
-            <div className="modal__title">Preoperacionales de {colaborador.nombre}</div>
+            <div className="modal__title">
+              Preoperacionales de {colaborador.nombre}
+            </div>
             <div className="modal__sub">Vista mensual</div>
           </div>
-          <button className="mini" onClick={onClose}>Cerrar</button>
+          <button className="mini" onClick={onClose}>
+            Cerrar
+          </button>
         </div>
 
         <div className="row" style={{ marginTop: 10 }}>
@@ -1512,13 +1549,21 @@ function ColaboradorCalendarioModal({ colaborador, onClose }) {
 
           <div className="monthLabel">{month}</div>
 
-          <button className="mini" onClick={nextMonth}>▶</button>
+          <button className="mini" onClick={nextMonth}>
+            ▶
+          </button>
         </div>
 
         <div className="legend">
-          <span className="legend__item"><span className="dot dot--green"></span> Realizado</span>
-          <span className="legend__item"><span className="dot dot--yellow"></span> N/A</span>
-          <span className="legend__item"><span className="dot dot--red"></span> No realizado</span>
+          <span className="legend__item">
+            <span className="dot dot--green"></span> Realizado
+          </span>
+          <span className="legend__item">
+            <span className="dot dot--yellow"></span> N/A
+          </span>
+          <span className="legend__item">
+            <span className="dot dot--red"></span> No realizado
+          </span>
         </div>
 
         {loading && <div className="hint">Cargando calendario...</div>}
@@ -1528,14 +1573,21 @@ function ColaboradorCalendarioModal({ colaborador, onClose }) {
           <>
             <div className="calendarHead">
               {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((d) => (
-                <div key={d} className="calendarHead__cell">{d}</div>
+                <div key={d} className="calendarHead__cell">
+                  {d}
+                </div>
               ))}
             </div>
 
             <div className="calendarGrid">
               {days.map((day, idx) => {
                 if (!day) {
-                  return <div key={`empty-${idx}`} className="calendarCell calendarCell--empty" />;
+                  return (
+                    <div
+                      key={`empty-${idx}`}
+                      className="calendarCell calendarCell--empty"
+                    />
+                  );
                 }
 
                 const dateKey = `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -1565,7 +1617,14 @@ function ColaboradorCalendarioModal({ colaborador, onClose }) {
 /* =========================
    DIA DEL CALENDARIO
 ========================= */
-function CalendarDayCell({ colaboradorId, dateKey, day, estado, motivo, onRefresh }) {
+function CalendarDayCell({
+  colaboradorId,
+  dateKey,
+  day,
+  estado,
+  motivo,
+  onRefresh,
+}) {
   const [detailOpen, setDetailOpen] = useState(false);
   const [actionOpen, setActionOpen] = useState(false);
 
@@ -1615,9 +1674,7 @@ function CalendarDayCell({ colaboradorId, dateKey, day, estado, motivo, onRefres
       >
         <span className="calendarCell__num">{day}</span>
 
-        {esFuturo && (
-          <span className="calendarLock">🔒</span>
-        )}
+        {esFuturo && <span className="calendarLock">🔒</span>}
       </button>
 
       {detailOpen && (
@@ -1648,7 +1705,13 @@ function CalendarDayCell({ colaboradorId, dateKey, day, estado, motivo, onRefres
 /* =========================
    DETALLE DEL DIA
 ========================= */
-function PreoperacionalesDiaModal({ colaboradorId, fecha, estado, motivo, onClose }) {
+function PreoperacionalesDiaModal({
+  colaboradorId,
+  fecha,
+  estado,
+  motivo,
+  onClose,
+}) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
@@ -1686,16 +1749,22 @@ function PreoperacionalesDiaModal({ colaboradorId, fecha, estado, motivo, onClos
         <div className="modal__head">
           <div>
             <div className="modal__title">
-              {estado === "na" ? "Día marcado como N/A" : "Preoperacionales del día"}
+              {estado === "na"
+                ? "Día marcado como N/A"
+                : "Preoperacionales del día"}
             </div>
             <div className="modal__sub">{fecha}</div>
           </div>
-          <button className="mini" onClick={onClose}>Cerrar</button>
+          <button className="mini" onClick={onClose}>
+            Cerrar
+          </button>
         </div>
 
         {estado === "na" ? (
           <div className="alert ok" style={{ marginTop: 12 }}>
-            <div><b>Día marcado como N/A</b></div>
+            <div>
+              <b>Día marcado como N/A</b>
+            </div>
             <div style={{ marginTop: "6px" }}>
               Motivo: {motivo || "No especificado"}
             </div>
@@ -1706,7 +1775,9 @@ function PreoperacionalesDiaModal({ colaboradorId, fecha, estado, motivo, onClos
             {err && <div className="alert err">{err}</div>}
 
             {!loading && items.length === 0 && (
-              <div className="hint">No hay preoperacionales registrados ese día.</div>
+              <div className="hint">
+                No hay preoperacionales registrados ese día.
+              </div>
             )}
 
             <div className="list">
@@ -1715,10 +1786,13 @@ function PreoperacionalesDiaModal({ colaboradorId, fecha, estado, motivo, onClos
                   <div className="qRow__left">
                     <div className="qRow__title">{item.maquinaria_nombre}</div>
                     <div className="qRow__sub">
-                      Hora: {item.hora || "—"} | Estado: {item.estado_texto || "—"}
+                      Hora: {item.hora || "—"} | Estado:{" "}
+                      {item.estado_texto || "—"}
                     </div>
                     {item.observacion_general && (
-                      <div className="qRow__sub">Obs: {item.observacion_general}</div>
+                      <div className="qRow__sub">
+                        Obs: {item.observacion_general}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1736,7 +1810,9 @@ function PreoperacionalesDiaModal({ colaboradorId, fecha, estado, motivo, onClos
 ========================= */
 function EliminarColaboradorBtn({ colaborador, onDeleted }) {
   const [open, setOpen] = useState(false);
-  const [code] = useState(() => Math.floor(100000 + Math.random() * 900000).toString());
+  const [code] = useState(() =>
+    Math.floor(100000 + Math.random() * 900000).toString(),
+  );
   const [inputCode, setInputCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -1761,7 +1837,8 @@ function EliminarColaboradorBtn({ colaborador, onDeleted }) {
     } catch (e) {
       setMsg({
         type: "err",
-        text: e?.response?.data?.message || "No se pudo eliminar al colaborador.",
+        text:
+          e?.response?.data?.message || "No se pudo eliminar al colaborador.",
       });
     } finally {
       setLoading(false);
@@ -1782,17 +1859,22 @@ function EliminarColaboradorBtn({ colaborador, onDeleted }) {
                 <div className="modal__title">Eliminar colaborador</div>
                 <div className="modal__sub">{colaborador.nombre}</div>
               </div>
-              <button className="mini" onClick={() => setOpen(false)}>Cerrar</button>
+              <button className="mini" onClick={() => setOpen(false)}>
+                Cerrar
+              </button>
             </div>
 
             <div className="alert err" style={{ marginTop: 12 }}>
-              Esta acción quitará el acceso del colaborador al sistema y ocultará su información personal.
-              Los cambios realizados se mantendran.
+              Esta acción quitará el acceso del colaborador al sistema y
+              ocultará su información personal. Los cambios realizados se
+              mantendran.
             </div>
 
             <div className="subbox" style={{ marginTop: 12 }}>
               <div className="subbox__title">Código de confirmación</div>
-              <div className="hint">Escribe este código para confirmar: <b>{code}</b></div>
+              <div className="hint">
+                Escribe este código para confirmar: <b>{code}</b>
+              </div>
 
               <input
                 className="inp"
@@ -1802,14 +1884,24 @@ function EliminarColaboradorBtn({ colaborador, onDeleted }) {
               />
 
               {msg && (
-                <div className={msg.type === "ok" ? "alert ok" : "alert err"} style={{ marginTop: 10 }}>
+                <div
+                  className={msg.type === "ok" ? "alert ok" : "alert err"}
+                  style={{ marginTop: 10 }}
+                >
                   {msg.text}
                 </div>
               )}
 
               <div className="row" style={{ marginTop: 12 }}>
-                <button className="mini" onClick={() => setOpen(false)}>Cancelar</button>
-                <button className="mini mini--danger" onClick={eliminar} disabled={loading} >{loading ? "Eliminando..." : "Eliminar"}
+                <button className="mini" onClick={() => setOpen(false)}>
+                  Cancelar
+                </button>
+                <button
+                  className="mini mini--danger"
+                  onClick={eliminar}
+                  disabled={loading}
+                >
+                  {loading ? "Eliminando..." : "Eliminar"}
                 </button>
               </div>
             </div>
@@ -1877,11 +1969,14 @@ function NoPreopActionModal({ colaboradorId, fecha, onClose, onDone }) {
             <div className="modal__title">Día sin preoperacional</div>
             <div className="modal__sub">{fecha}</div>
           </div>
-          <button className="mini" onClick={onClose}>Cerrar</button>
+          <button className="mini" onClick={onClose}>
+            Cerrar
+          </button>
         </div>
 
         <div className="hint" style={{ marginTop: 12 }}>
-          Este día no tiene preoperacionales registrados. Puedes enviar una alerta o marcarlo como N/A.
+          Este día no tiene preoperacionales registrados. Puedes enviar una
+          alerta o marcarlo como N/A.
         </div>
 
         <Field label="Motivo N/A (opcional)">
@@ -1894,12 +1989,23 @@ function NoPreopActionModal({ colaboradorId, fecha, onClose, onDone }) {
         </Field>
 
         {msg && (
-          <div className={msg.type === "ok" ? "alert ok" : "alert err"} style={{ marginTop: 10 }}>
+          <div
+            className={msg.type === "ok" ? "alert ok" : "alert err"}
+            style={{ marginTop: 10 }}
+          >
             {msg.text}
           </div>
         )}
 
         <div className="row" style={{ marginTop: 14 }}>
+          <button
+            className="mini mini--blue"
+            onClick={enviarAlerta}
+            disabled={loadingAlert}
+          >
+            {loadingAlert ? "Enviando..." : "Enviar alerta al trabajador"}
+          </button>
+
           <button className="mini" onClick={marcarNa} disabled={loadingNa}>
             {loadingNa ? "Guardando..." : "N/A"}
           </button>
@@ -1908,7 +2014,6 @@ function NoPreopActionModal({ colaboradorId, fecha, onClose, onDone }) {
     </div>
   );
 }
-
 
 /* =========================
    TAB 3: HERRAMIENTAS Y EQUIPOS
@@ -1959,13 +2064,14 @@ function Equipos() {
     <div className="panel">
       <h2 className="panel__title">Herramientas y equipos</h2>
 
-      <div style={{
-        display: "flex",
-        gap: "12px",
-        marginTop: 12,
-        flexWrap: "wrap"
-      }}>
-
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          marginTop: 12,
+          flexWrap: "wrap",
+        }}
+      >
         <div style={{ flex: 1, minWidth: "120px" }}>
           <Field label="Buscar maquinaria" style={{ flex: 1 }}>
             <input
@@ -2191,14 +2297,18 @@ function Perfil() {
             </div>
 
             <div className="maqHero__info">
-              <h2 className="maqHero__title">{data.nombre || "Administrador"}</h2>
+              <h2 className="maqHero__title">
+                {data.nombre || "Administrador"}
+              </h2>
 
               <div className="grid2">
                 <Field label="Nombre">
                   <input
                     className="inp"
                     value={data.nombre}
-                    onChange={(e) => setData({ ...data, nombre: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, nombre: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -2206,7 +2316,9 @@ function Perfil() {
                   <input
                     className="inp"
                     value={data.cargo}
-                    onChange={(e) => setData({ ...data, cargo: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, cargo: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -2216,10 +2328,14 @@ function Perfil() {
                     type="date"
                     value={
                       data.fecha_ingreso
-                        ? new Date(data.fecha_ingreso).toISOString().slice(0, 10)
+                        ? new Date(data.fecha_ingreso)
+                            .toISOString()
+                            .slice(0, 10)
                         : ""
                     }
-                    onChange={(e) => setData({ ...data, fecha_ingreso: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, fecha_ingreso: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -2227,7 +2343,9 @@ function Perfil() {
                   <input
                     className="inp"
                     value={data.tipo_contrato}
-                    onChange={(e) => setData({ ...data, tipo_contrato: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, tipo_contrato: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -2243,7 +2361,9 @@ function Perfil() {
                   <input
                     className="inp"
                     value={data.direccion}
-                    onChange={(e) => setData({ ...data, direccion: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, direccion: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -2251,7 +2371,9 @@ function Perfil() {
                   <input
                     className="inp"
                     value={data.numero_documento}
-                    onChange={(e) => setData({ ...data, numero_documento: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, numero_documento: e.target.value })
+                    }
                   />
                 </Field>
 
@@ -2260,12 +2382,17 @@ function Perfil() {
               <Field label="Foto (opcional)">
                 <FotoInput
                   initialUrl={data.foto_url ? getImageUrl(data.foto_url) : ""}
-                  onUpload={(url) => { if (url) setData((prev) => ({ ...prev, foto_url: url })); }}
+                  onUpload={(url) => {
+                    if (url) setData((prev) => ({ ...prev, foto_url: url }));
+                  }}
                 />
               </Field>
 
               {msg && (
-                <div className={msg.type === "ok" ? "alert ok" : "alert err"} style={{ marginTop: 12 }}>
+                <div
+                  className={msg.type === "ok" ? "alert ok" : "alert err"}
+                  style={{ marginTop: 12 }}
+                >
                   {msg.text}
                 </div>
               )}
@@ -2294,7 +2421,9 @@ function Perfil() {
 
                   <div className="card__name">{a.nombre}</div>
                   <div className="card__sub">Cargo: {a.cargo || "—"}</div>
-                  <div className="card__sub">Documento: {a.numero_documento || "—"}</div>
+                  <div className="card__sub">
+                    Documento: {a.numero_documento || "—"}
+                  </div>
 
                   <div className="card__actions">
                     <EliminarColaboradorBtn
@@ -2318,6 +2447,7 @@ function Perfil() {
 function Alertas() {
   const [fallos, setFallos] = useState([]);
   const [sinPreop, setSinPreop] = useState([]);
+  const [reportesAbiertos, setReportesAbiertos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -2333,26 +2463,32 @@ function Alertas() {
 
   const [showAllUsuarios, setShowAllUsuarios] = useState(false);
   const [showAllMaquinas, setShowAllMaquinas] = useState(false);
+  const [showAllReportes, setShowAllReportes] = useState(false);
 
   const navigate = useNavigate();
 
   const [gestionOpen, setGestionOpen] = useState(false);
-  const [selectedFallo, setSelectedFallo] = useState(null)
+  const [selectedFallo, setSelectedFallo] = useState(null);
+  const [reporteModalId, setReporteModalId] = useState(null);
 
   async function loadAlertas() {
     try {
       setLoading(true);
       setErr(null);
 
-      const [fallosRes, sinPreopRes] = await Promise.all([
+      const [fallosRes, sinPreopRes, reportesRes] = await Promise.all([
         api.get("/alertas/fallos"),
         api.get("/alertas/sin-preoperacional-hoy"),
+        api.get("/alertas/reportes-abiertos"),
       ]);
 
       setFallos(fallosRes.data || []);
       setSinPreop(sinPreopRes.data || []);
+      setReportesAbiertos(reportesRes.data || []);
     } catch (e) {
-      setErr(e?.response?.data?.message || "No se pudieron cargar las alertas.");
+      setErr(
+        e?.response?.data?.message || "No se pudieron cargar las alertas.",
+      );
     } finally {
       setLoading(false);
     }
@@ -2392,11 +2528,16 @@ function Alertas() {
         });
       }
 
-      setMsg({ type: "ok", text: "Alertas enviadas a todos los pendientes ✅" });
+      setMsg({
+        type: "ok",
+        text: "Alertas enviadas a todos los pendientes ✅",
+      });
     } catch (e) {
       setMsg({
         type: "err",
-        text: e?.response?.data?.message || "No se pudieron enviar todas las alertas.",
+        text:
+          e?.response?.data?.message ||
+          "No se pudieron enviar todas las alertas.",
       });
     }
   }
@@ -2412,7 +2553,10 @@ function Alertas() {
       {err && <div className="alert err">{err}</div>}
 
       {msg && (
-        <div className={msg.type === "ok" ? "alert ok" : "alert err"} style={{ marginTop: 12 }}>
+        <div
+          className={msg.type === "ok" ? "alert ok" : "alert err"}
+          style={{ marginTop: 12 }}
+        >
           {msg.text}
         </div>
       )}
@@ -2420,18 +2564,28 @@ function Alertas() {
       {!loading && (
         <>
           <div className="maqSection" style={{ margin: "0 0 16px 0" }}>
-            <div className="row" style={{ justifyContent: "space-between", marginBottom: 12 }}>
-              <h3 className="box__title">Colaboradores sin preoperacional hoy</h3>
+            <div
+              className="row"
+              style={{ justifyContent: "space-between", marginBottom: 12 }}
+            >
+              <h3 className="box__title">
+                Colaboradores sin preoperacional hoy
+              </h3>
 
               {sinPreop.length > 0 && (
-                <button className="mini mini--blue" onClick={enviarAlertasATodos}>
+                <button
+                  className="mini mini--blue"
+                  onClick={enviarAlertasATodos}
+                >
                   Enviar alerta a todos
                 </button>
               )}
             </div>
 
             {sinPreop.length === 0 ? (
-              <div className="hint">No hay colaboradores pendientes por revisar.</div>
+              <div className="hint">
+                No hay colaboradores pendientes por revisar.
+              </div>
             ) : (
               <>
                 <div className="previewGrid">
@@ -2439,7 +2593,9 @@ function Alertas() {
                     <div key={c.id} className="previewCard previewCard--preop">
                       <div className="previewCard__badge">Pendiente</div>
                       <div className="previewCard__title">{c.nombre}</div>
-                      <div className="previewCard__sub">Cargo: {c.cargo || "—"}</div>
+                      <div className="previewCard__sub">
+                        Cargo: {c.cargo || "—"}
+                      </div>
                       <div className="previewCard__sub">
                         Documento: {c.numero_documento || "—"}
                       </div>
@@ -2496,7 +2652,9 @@ function Alertas() {
           </div>
 
           <div className="maqSection" style={{ margin: "0" }}>
-            <h3 className="box__title">Alertas por fallos en preoperacionales</h3>
+            <h3 className="box__title">
+              Alertas por fallos en preoperacionales
+            </h3>
 
             {fallos.length === 0 ? (
               <div className="hint">No hay alertas de fallos registradas.</div>
@@ -2504,15 +2662,24 @@ function Alertas() {
               <>
                 <div className="previewGrid">
                   {maquinasVisibles.map((a) => (
-                    <div key={a.id} className="previewCard previewCard--history">
+                    <div
+                      key={a.id}
+                      className="previewCard previewCard--history"
+                    >
                       <div className="previewCard__badge">No cumple</div>
-                      <div className="previewCard__title">{a.maquinaria_nombre}</div>
+                      <div className="previewCard__title">
+                        {a.maquinaria_nombre}
+                      </div>
                       <div className="previewCard__sub">Serial: {a.serial}</div>
-                      <div className="previewCard__sub">Modelo: {a.modelo || "—"}</div>
+                      <div className="previewCard__sub">
+                        Modelo: {a.modelo || "—"}
+                      </div>
                       <div className="previewCard__sub">
                         Colaborador: {a.colaborador_nombre}
                       </div>
-                      <div className="previewCard__sub">Ítem: {a.item_fallido}</div>
+                      <div className="previewCard__sub">
+                        Ítem: {a.item_fallido}
+                      </div>
 
                       <div className="row" style={{ marginTop: 12 }}>
                         <button
@@ -2549,10 +2716,161 @@ function Alertas() {
               </>
             )}
           </div>
+
+          {/* ── REPORTES DE OBSERVACIÓN SIN CERRAR ── */}
+          <div className="maqSection" style={{ margin: "16px 0 0 0" }}>
+            <h3 className="box__title" style={{ marginBottom: 12 }}>
+              Reportes de observación sin cerrar
+              {reportesAbiertos.length > 0 && (
+                <span
+                  style={{
+                    marginLeft: 8,
+                    background: "#ef4444",
+                    color: "#fff",
+                    borderRadius: 999,
+                    padding: "2px 8px",
+                    fontSize: 12,
+                    fontWeight: 800,
+                  }}
+                >
+                  {reportesAbiertos.length}
+                </span>
+              )}
+            </h3>
+
+            {reportesAbiertos.length === 0 ? (
+              <div className="hint">
+                No hay reportes pendientes de cierre. ✅
+              </div>
+            ) : (
+              <>
+                <div className="previewGrid">
+                  {(showAllReportes
+                    ? reportesAbiertos
+                    : reportesAbiertos.slice(0, 4)
+                  ).map((r) => {
+                    const colorEstado =
+                      r.estado === "abierto" ? "#ef4444" : "#3b82f6";
+                    const labelEstado =
+                      r.estado === "abierto" ? "Sin gestión" : "En proceso";
+                    const urgente =
+                      r.dias_abierto >= 3 && r.estado === "abierto";
+                    return (
+                      <div
+                        key={r.id}
+                        className="previewCard previewCard--preop"
+                        style={{
+                          borderLeft: `3px solid ${colorEstado}`,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => setReporteModalId(r.id)}
+                      >
+                        <div
+                          style={{
+                            display: "inline-block",
+                            background: `${colorEstado}18`,
+                            color: colorEstado,
+                            borderRadius: 999,
+                            padding: "3px 10px",
+                            fontSize: 11,
+                            fontWeight: 800,
+                            marginBottom: 6,
+                          }}
+                        >
+                          {labelEstado}
+                          {urgente && " ⚠️"}
+                        </div>
+                        <div className="previewCard__title">
+                          {{
+                            incidente: "Incidente",
+                            impacto_ambiental: "Impacto Ambiental",
+                            error_info_tecnica: "Error de Info. Técnica",
+                            incumplimiento_parametros:
+                              "Incumplimiento Parámetros (PNC)",
+                            acto_seguro: "Acto Seguro",
+                            acto_inseguro: "Acto Inseguro",
+                            condicion_segura: "Condición Segura",
+                          }[r.situacion] || r.situacion}
+                        </div>
+                        <div className="previewCard__sub">
+                          📍 {r.ciudad} — {r.lugar}
+                        </div>
+                        <div className="previewCard__sub">
+                          👤 {r.reportado_por_nombre} ({r.reportado_por_rol})
+                        </div>
+                        <div className="previewCard__sub">
+                          📅 {r.fecha_texto}
+                        </div>
+                        {r.dias_abierto > 0 && (
+                          <div
+                            className="previewCard__sub"
+                            style={{
+                              color: urgente ? "#dc2626" : "#64748b",
+                              fontWeight: urgente ? 700 : 400,
+                            }}
+                          >
+                            ⏱ {r.dias_abierto} día(s) sin cerrar
+                          </div>
+                        )}
+                        {r.ultima_gestion && (
+                          <div className="previewCard__sub">
+                            Última gestión: {r.ultima_gestion}
+                          </div>
+                        )}
+                        <div className="row" style={{ marginTop: 10 }}>
+                          <button
+                            className="mini mini--blue"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setReporteModalId(r.id);
+                            }}
+                          >
+                            Gestionar
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {reportesAbiertos.length > 4 && (
+                  <div className="row" style={{ marginTop: 14 }}>
+                    <button
+                      className="mini"
+                      onClick={() => setShowAllReportes((p) => !p)}
+                    >
+                      {showAllReportes
+                        ? "Ver menos"
+                        : `Ver más (${reportesAbiertos.length - 4} más)`}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </>
       )}
 
-
+      {/* Modal reporte desde alertas */}
+      {reporteModalId && (
+        <div className="modal__back">
+          <div className="modal modal--xl">
+            <div className="modal__head">
+              <div className="modal__title">Gestionar Reporte</div>
+              <button className="mini" onClick={() => setReporteModalId(null)}>
+                Cerrar
+              </button>
+            </div>
+            <ReporteDetalleEnAlerta
+              reporteId={reporteModalId}
+              onDone={() => {
+                setReporteModalId(null);
+                loadAlertas();
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {gestionOpen && selectedFallo && (
         <GestionAlertaFalloModal
@@ -2586,9 +2904,13 @@ function Alertas() {
             <div className="list">
               <div className="qRow">
                 <div className="qRow__left">
-                  <div className="qRow__title">{selected.maquinaria_nombre}</div>
+                  <div className="qRow__title">
+                    {selected.maquinaria_nombre}
+                  </div>
                   <div className="qRow__sub">Serial: {selected.serial}</div>
-                  <div className="qRow__sub">Modelo: {selected.modelo || "—"}</div>
+                  <div className="qRow__sub">
+                    Modelo: {selected.modelo || "—"}
+                  </div>
                   <div className="qRow__sub">
                     Colaborador: {selected.colaborador_nombre}
                   </div>
@@ -2666,6 +2988,309 @@ function Alertas() {
   );
 }
 
+// ─── Detalle + gestión de reporte desde Alertas ──────────────────────────────
+const SITUACIONES_LABEL = {
+  incidente: "Incidente",
+  impacto_ambiental: "Impacto Ambiental",
+  error_info_tecnica: "Error de Información Técnica",
+  incumplimiento_parametros: "Incumplimiento de Parámetros (PNC)",
+  acto_seguro: "Acto Seguro",
+  acto_inseguro: "Acto Inseguro",
+  condicion_segura: "Condición Segura",
+};
+const ACCIONES_LABEL = {
+  R: "R — Reparación / Reproceso",
+  R1: "R1 — Reclasificación",
+  LB: "LB — Liberación Bajo Concesión",
+  RE: "RE — Rechazo / Descarte",
+  C: "C — Cumplió",
+};
+
+function ReporteDetalleEnAlerta({ reporteId, onDone }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ tipo_accion: "", descripcion: "" });
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  useEffect(() => {
+    api
+      .get(`/reportes/${reporteId}`)
+      .then((r) => setData(r.data))
+      .catch(() =>
+        setMsg({ type: "err", text: "No se pudo cargar el reporte." }),
+      )
+      .finally(() => setLoading(false));
+  }, [reporteId]);
+
+  async function guardar(cierra) {
+    setMsg(null);
+    if (!form.tipo_accion)
+      return setMsg({ type: "err", text: "Selecciona el tipo de acción." });
+    if (!form.descripcion.trim())
+      return setMsg({ type: "err", text: "Escribe la descripción." });
+    try {
+      setSaving(true);
+      await api.post(`/reportes/${reporteId}/gestion`, {
+        tipo_accion: form.tipo_accion,
+        descripcion: form.descripcion.trim(),
+        cierra_reporte: cierra,
+      });
+      setMsg({
+        type: "ok",
+        text: cierra ? "Reporte cerrado ✅" : "Gestión guardada ✅",
+      });
+      setTimeout(() => onDone?.(), 900);
+    } catch (e) {
+      setMsg({
+        type: "err",
+        text: e?.response?.data?.message || "Error guardando gestión.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) return <div className="hint">Cargando reporte...</div>;
+  if (!data) return <div className="alert err">No se pudo cargar.</div>;
+
+  const { reporte: r, gestiones = [] } = data;
+
+  return (
+    <div>
+      <div
+        style={{
+          background: "#f8fafc",
+          borderRadius: 12,
+          padding: 16,
+          border: "1px solid #e5e7eb",
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 10 }}>
+          {SITUACIONES_LABEL[r.situacion] || r.situacion}
+          <span
+            style={{
+              marginLeft: 10,
+              fontSize: 12,
+              fontWeight: 800,
+              borderRadius: 999,
+              padding: "2px 8px",
+              background:
+                r.estado === "abierto"
+                  ? "rgba(239,68,68,0.1)"
+                  : r.estado === "en_proceso"
+                    ? "rgba(59,130,246,0.1)"
+                    : "rgba(249,115,22,0.1)",
+              color:
+                r.estado === "abierto"
+                  ? "#dc2626"
+                  : r.estado === "en_proceso"
+                    ? "#1d4ed8"
+                    : "#c2410c",
+            }}
+          >
+            {r.estado === "abierto"
+              ? "Sin gestión"
+              : r.estado === "en_proceso"
+                ? "En proceso"
+                : "Cerrado"}
+          </span>
+        </div>
+        <div className="grid2">
+          <Info label="Fecha" value={r.fecha_texto || r.fecha} />
+          <Info label="Ciudad" value={r.ciudad} />
+          <Info label="Lugar" value={r.lugar} />
+          <Info
+            label="Reportado por"
+            value={`${r.reportado_por_nombre} (${r.reportado_por_cargo || r.reportado_por_rol})`}
+          />
+        </div>
+        <div style={{ marginTop: 10, fontSize: 13, color: "#374151" }}>
+          {r.descripcion}
+        </div>
+        {r.foto_url && (
+          <img
+            src={getImageUrl(r.foto_url)}
+            alt="Evidencia"
+            style={{
+              width: 120,
+              height: 120,
+              objectFit: "cover",
+              borderRadius: 8,
+              marginTop: 10,
+            }}
+          />
+        )}
+      </div>
+
+      {gestiones.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 8 }}>
+            Gestiones previas ({gestiones.length})
+          </div>
+          {gestiones.map((g) => (
+            <div
+              key={g.id}
+              style={{
+                background: "#fff",
+                border: "1px solid #e5e7eb",
+                borderRadius: 10,
+                padding: "10px 14px",
+                marginBottom: 6,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: 6,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: g.cierra_reporte ? "#c2410c" : "#1d4ed8",
+                  }}
+                >
+                  {ACCIONES_LABEL[g.tipo_accion] || g.tipo_accion}
+                </span>
+                <span style={{ fontSize: 11, color: "#64748b" }}>
+                  {g.fecha_texto} — {g.realizado_por_nombre}
+                </span>
+              </div>
+              <div style={{ marginTop: 6, fontSize: 13 }}>{g.descripcion}</div>
+              {g.cierra_reporte && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#f97316",
+                    fontWeight: 700,
+                    marginTop: 4,
+                  }}
+                >
+                  🔒 Esta acción cerró el reporte
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {r.estado !== "cerrado" && !showForm && (
+        <button className="mini mini--blue" onClick={() => setShowForm(true)}>
+          + Registrar gestión administrativa
+        </button>
+      )}
+
+      {r.estado !== "cerrado" && showForm && (
+        <div
+          style={{
+            background: "#f0f9ff",
+            border: "1px solid #bae6fd",
+            borderRadius: 12,
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              fontWeight: 800,
+              fontSize: 14,
+              marginBottom: 12,
+              color: "#0c4a6e",
+            }}
+          >
+            Nueva Gestión
+          </div>
+          <Field label="Tipo de acción">
+            <select
+              className="inp"
+              value={form.tipo_accion}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, tipo_accion: e.target.value }))
+              }
+            >
+              <option value="">Selecciona...</option>
+              {Object.entries(ACCIONES_LABEL).map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Descripción" style={{ marginTop: 10 }}>
+            <textarea
+              className="inp"
+              rows={3}
+              value={form.descripcion}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, descripcion: e.target.value }))
+              }
+              placeholder="Describe la acción realizada..."
+              style={{ resize: "vertical" }}
+            />
+          </Field>
+          {msg && (
+            <div
+              className={`alert ${msg.type === "ok" ? "ok" : "err"}`}
+              style={{ marginTop: 10 }}
+            >
+              {msg.text}
+            </div>
+          )}
+          <div
+            className="row"
+            style={{ marginTop: 12, gap: 8, flexWrap: "wrap" }}
+          >
+            <button
+              className="mini"
+              onClick={() => {
+                setShowForm(false);
+                setMsg(null);
+              }}
+            >
+              Cancelar
+            </button>
+            <button
+              className="mini"
+              style={{
+                borderColor: "rgba(59,130,246,.3)",
+                background: "rgba(59,130,246,.08)",
+                color: "#1d4ed8",
+              }}
+              onClick={() => guardar(false)}
+              disabled={saving}
+            >
+              {saving ? "Guardando..." : "💾 Guardar proceso"}
+            </button>
+            <button
+              className="mini"
+              style={{
+                borderColor: "rgba(249,115,22,.3)",
+                background: "rgba(249,115,22,.10)",
+                color: "#c2410c",
+              }}
+              onClick={() => guardar(true)}
+              disabled={saving}
+            >
+              {saving ? "Cerrando..." : "🔒 Cerrar reporte"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {r.estado === "cerrado" && (
+        <div className="alert ok" style={{ marginTop: 12 }}>
+          Este reporte está cerrado. ✅
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MarcarNaDesdeAlertaModal({ colaborador, onClose, onDone }) {
   const [motivo, setMotivo] = useState("");
   const [loading, setLoading] = useState(false);
@@ -2725,7 +3350,10 @@ function MarcarNaDesdeAlertaModal({ colaborador, onClose, onDone }) {
         </Field>
 
         {msg && (
-          <div className={msg.type === "ok" ? "alert ok" : "alert err"} style={{ marginTop: 12 }}>
+          <div
+            className={msg.type === "ok" ? "alert ok" : "alert err"}
+            style={{ marginTop: 12 }}
+          >
             {msg.text}
           </div>
         )}
@@ -2735,7 +3363,11 @@ function MarcarNaDesdeAlertaModal({ colaborador, onClose, onDone }) {
             Cancelar
           </button>
 
-          <button className="mini mini--blue" onClick={marcarNa} disabled={loading}>
+          <button
+            className="mini mini--blue"
+            onClick={marcarNa}
+            disabled={loading}
+          >
             {loading ? "Guardando..." : "Confirmar N/A"}
           </button>
         </div>
@@ -2753,7 +3385,7 @@ function GestionAlertaFalloModal({ alerta, onClose, onDone }) {
 
   const [openBaja, setOpenBaja] = useState(false);
   const [codigo] = useState(() =>
-    Math.floor(100000 + Math.random() * 900000).toString()
+    Math.floor(100000 + Math.random() * 900000).toString(),
   );
   const [inputCodigo, setInputCodigo] = useState("");
 
@@ -2851,9 +3483,13 @@ function GestionAlertaFalloModal({ alerta, onClose, onDone }) {
           <div className="qRow" style={{ marginBottom: 14 }}>
             <div className="qRow__left">
               <div className="qRow__title">{alerta.item_fallido}</div>
-              <div className="qRow__sub">Colaborador: {alerta.colaborador_nombre}</div>
+              <div className="qRow__sub">
+                Colaborador: {alerta.colaborador_nombre}
+              </div>
               {alerta.observacion && (
-                <div className="qRow__sub">Observación: {alerta.observacion}</div>
+                <div className="qRow__sub">
+                  Observación: {alerta.observacion}
+                </div>
               )}
               {alerta.foto_url && (
                 <img
@@ -2884,7 +3520,11 @@ function GestionAlertaFalloModal({ alerta, onClose, onDone }) {
           </Field>
 
           <Field label="Foto de la gestión">
-            <FotoInput onUpload={(url) => { if (url) setFotoControl(url); }} />
+            <FotoInput
+              onUpload={(url) => {
+                if (url) setFotoControl(url);
+              }}
+            />
           </Field>
 
           <Field label="Acción final">
@@ -2958,4 +3598,3 @@ function GestionAlertaFalloModal({ alerta, onClose, onDone }) {
     </>
   );
 }
-

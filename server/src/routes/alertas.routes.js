@@ -41,7 +41,7 @@ router.get("/fallos", requireAuth, requireAdmin, async (req, res) => {
             AND e.fecha >= DATE(p.fecha)
         )
       ORDER BY p.fecha DESC
-      `
+      `,
     );
 
     res.json(r.rows);
@@ -54,17 +54,21 @@ router.get("/fallos", requireAuth, requireAdmin, async (req, res) => {
 /* =========================
    ALERTAS SIN PREOPERACIONAL
 ========================= */
-router.get("/sin-preoperacional-hoy", requireAuth, requireAdmin, async (req, res) => {
-  try {
-    const ahora = new Date();
-    const hora = ahora.getHours();
+router.get(
+  "/sin-preoperacional-hoy",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const ahora = new Date();
+      const hora = ahora.getHours();
 
-    if (hora < 7) {
-      return res.json([]);
-    }
+      if (hora < 7) {
+        return res.json([]);
+      }
 
-    const r = await pool.query(
-      `
+      const r = await pool.query(
+        `
       SELECT
         u.id,
         u.nombre,
@@ -93,14 +97,61 @@ router.get("/sin-preoperacional-hoy", requireAuth, requireAdmin, async (req, res
         )
 
       ORDER BY u.nombre ASC
-      `
-    );
+      `,
+      );
 
-    res.json(r.rows);
-  } catch (err) {
-    console.error("ERROR cargando alertas:", err);
-    res.status(500).json({ message: "Error cargando alertas." });
-  }
-});
+      res.json(r.rows);
+    } catch (err) {
+      console.error("ERROR cargando alertas:", err);
+      res.status(500).json({ message: "Error cargando alertas." });
+    }
+  },
+);
+
+/* =========================
+   ALERTAS — REPORTES ABIERTOS O EN PROCESO
+========================= */
+router.get(
+  "/reportes-abiertos",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const r = await pool.query(
+        `SELECT
+         ro.id,
+         ro.estado,
+         ro.situacion,
+         ro.ciudad,
+         ro.lugar,
+         ro.descripcion,
+         ro.foto_url,
+         TO_CHAR(ro.fecha,     'YYYY-MM-DD')         AS fecha_texto,
+         TO_CHAR(ro.creado_en, 'YYYY-MM-DD HH24:MI') AS creado_en_texto,
+         u.nombre           AS reportado_por_nombre,
+         u.numero_documento AS reportado_por_documento,
+         u.cargo            AS reportado_por_cargo,
+         u.rol              AS reportado_por_rol,
+         -- días sin gestión
+         EXTRACT(DAY FROM NOW() - ro.creado_en)::int AS dias_abierto,
+         -- última gestión
+         (SELECT TO_CHAR(MAX(g.creado_en), 'YYYY-MM-DD HH24:MI')
+          FROM reportes_observacion_gestion g
+          WHERE g.reporte_id = ro.id) AS ultima_gestion
+       FROM reportes_observacion ro
+       JOIN usuarios u ON u.id = ro.reportado_por
+       WHERE ro.estado IN ('abierto', 'en_proceso')
+       ORDER BY
+         CASE ro.estado WHEN 'abierto' THEN 0 ELSE 1 END,
+         ro.creado_en ASC`,
+      );
+
+      res.json(r.rows);
+    } catch (err) {
+      console.error("ERROR cargando alertas de reportes:", err);
+      res.status(500).json({ message: "Error cargando alertas de reportes." });
+    }
+  },
+);
 
 export default router;

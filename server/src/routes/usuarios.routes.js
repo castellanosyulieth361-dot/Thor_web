@@ -33,7 +33,7 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
 
     const existe = await pool.query(
       `SELECT 1 FROM usuarios WHERE numero_documento = $1`,
-      [data.numero_documento]
+      [data.numero_documento],
     );
 
     if (existe.rowCount > 0) {
@@ -42,10 +42,9 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
       });
     }
 
-    const rolRes = await pool.query(
-      `SELECT id FROM roles WHERE nombre = $1`,
-      [data.rol]
-    );
+    const rolRes = await pool.query(`SELECT id FROM roles WHERE nombre = $1`, [
+      data.rol,
+    ]);
 
     const roleId = rolRes.rows[0]?.id;
     if (!roleId) {
@@ -73,7 +72,7 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
         null,
         password_hash,
         roleId,
-      ]
+      ],
     );
 
     res.status(201).json({
@@ -147,13 +146,12 @@ router.get("/", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-
 router.get("/mis-alertas", requireAuth, async (req, res) => {
   try {
     await pool.query(
       `UPDATE preoperacionales_habilitados
        SET activo = FALSE
-       WHERE activo = TRUE AND vence_en < NOW()`
+       WHERE activo = TRUE AND vence_en < NOW()`,
     );
 
     const mensajesRes = await pool.query(
@@ -185,7 +183,7 @@ router.get("/mis-alertas", requireAuth, async (req, res) => {
         )
       ORDER BY m.creado_en DESC
       `,
-      [req.user.id]
+      [req.user.id],
     );
 
     const habilitacionesRes = await pool.query(
@@ -210,25 +208,30 @@ router.get("/mis-alertas", requireAuth, async (req, res) => {
         AND h.vence_en >= NOW()
       ORDER BY h.creado_en DESC
       `,
-      [req.user.id]
+      [req.user.id],
     );
 
-    const alertas = [
-      ...habilitacionesRes.rows,
-      ...mensajesRes.rows,
-    ].sort((a, b) => new Date(b.creado_en) - new Date(a.creado_en));
+    const alertas = [...habilitacionesRes.rows, ...mensajesRes.rows].sort(
+      (a, b) => new Date(b.creado_en) - new Date(a.creado_en),
+    );
 
     res.json(alertas);
   } catch (err) {
     console.error("ERROR cargando alertas del colaborador:", err);
-    res.status(500).json({ message: "Error cargando alertas del colaborador." });
+    res
+      .status(500)
+      .json({ message: "Error cargando alertas del colaborador." });
   }
 });
 
-router.get("/alertas/no-preoperacional-hoy", requireAuth, requireAdmin, async (req, res) => {
-  try {
-    const r = await pool.query(
-      `
+router.get(
+  "/alertas/no-preoperacional-hoy",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const r = await pool.query(
+        `
       SELECT
         u.id,
         u.nombre,
@@ -245,16 +248,20 @@ router.get("/alertas/no-preoperacional-hoy", requireAuth, requireAdmin, async (r
             AND DATE(p.fecha) = CURRENT_DATE
         )
       ORDER BY u.nombre ASC
-      `
-    );
+      `,
+      );
 
-    res.json(r.rows);
-  } catch (err) {
-    console.error("ERROR cargando alertas de no preoperacional:", err);
-    res.status(500).json({ message: "Error cargando alertas de personal sin preoperacional." });
-  }
-});
-
+      res.json(r.rows);
+    } catch (err) {
+      console.error("ERROR cargando alertas de no preoperacional:", err);
+      res
+        .status(500)
+        .json({
+          message: "Error cargando alertas de personal sin preoperacional.",
+        });
+    }
+  },
+);
 
 /* =========================
    RESUMEN MENSUAL DE PREOPERACIONALES
@@ -271,7 +278,9 @@ router.get("/:id/preoperacionales/resumen", requireAuth, async (req, res) => {
     const { month } = req.query;
 
     if (!month || !/^\d{4}-\d{2}$/.test(month)) {
-      return res.status(400).json({ message: "El parámetro month debe tener formato YYYY-MM" });
+      return res
+        .status(400)
+        .json({ message: "El parámetro month debe tener formato YYYY-MM" });
     }
 
     const [year, mon] = month.split("-").map(Number);
@@ -287,7 +296,7 @@ router.get("/:id/preoperacionales/resumen", requireAuth, async (req, res) => {
       FROM usuarios
       WHERE id = $1
       `,
-      [id]
+      [id],
     );
 
     if (userRes.rowCount === 0) {
@@ -327,7 +336,7 @@ router.get("/:id/preoperacionales/resumen", requireAuth, async (req, res) => {
         AND fecha < $3::date
       GROUP BY DATE(fecha)
       `,
-      [id, startDate, nextMonthDate]
+      [id, startDate, nextMonthDate],
     );
 
     for (const row of realizados.rows) {
@@ -349,7 +358,7 @@ router.get("/:id/preoperacionales/resumen", requireAuth, async (req, res) => {
         AND fecha < $3::date
         AND estado = 'na'
       `,
-      [id, startDate, nextMonthDate]
+      [id, startDate, nextMonthDate],
     );
 
     for (const row of naRows.rows) {
@@ -365,8 +374,6 @@ router.get("/:id/preoperacionales/resumen", requireAuth, async (req, res) => {
       resumen,
       minMonth: creadoEn.toISOString().slice(0, 7),
     });
-
-
   } catch (err) {
     console.error("ERROR resumen mensual:", err);
     res.status(500).json({ message: "Error cargando resumen mensual" });
@@ -376,21 +383,27 @@ router.get("/:id/preoperacionales/resumen", requireAuth, async (req, res) => {
 /* =========================
    DETALLE DE PREOPERACIONALES DE UN DÍA
 ========================= */
-router.get("/:id/preoperacionales", requireAuth, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { date } = req.query;
+router.get(
+  "/:id/preoperacionales",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { date } = req.query;
 
-    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      return res.status(400).json({ message: "El parámetro date debe tener formato YYYY-MM-DD" });
-    }
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return res
+          .status(400)
+          .json({ message: "El parámetro date debe tener formato YYYY-MM-DD" });
+      }
 
-    const nextDateObj = new Date(date);
-    nextDateObj.setDate(nextDateObj.getDate() + 1);
-    const nextDate = nextDateObj.toISOString().slice(0, 10);
+      const nextDateObj = new Date(date);
+      nextDateObj.setDate(nextDateObj.getDate() + 1);
+      const nextDate = nextDateObj.toISOString().slice(0, 10);
 
-    const r = await pool.query(
-      `
+      const r = await pool.query(
+        `
       SELECT
         p.id,
         p.fecha,
@@ -409,15 +422,16 @@ router.get("/:id/preoperacionales", requireAuth, requireAdmin, async (req, res) 
         AND p.fecha < $3::date
       ORDER BY p.fecha ASC
       `,
-      [id, date, nextDate]
-    );
+        [id, date, nextDate],
+      );
 
-    res.json(r.rows);
-  } catch (err) {
-    console.error("ERROR detalle diario:", err);
-    res.status(500).json({ message: "Error cargando detalle del día" });
-  }
-});
+      res.json(r.rows);
+    } catch (err) {
+      console.error("ERROR detalle diario:", err);
+      res.status(500).json({ message: "Error cargando detalle del día" });
+    }
+  },
+);
 
 /* =========================
    ALERTA AUTOMÁTICA POR FALTA DE PREOPERACIONAL
@@ -427,14 +441,17 @@ const alertaSchema = z.object({
   fecha: z.string().min(10),
 });
 
-router.post("/:id/alerta-falta-preop", requireAuth, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { fecha } = alertaSchema.parse(req.body);
+router.post(
+  "/:id/alerta-falta-preop",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { fecha } = alertaSchema.parse(req.body);
 
-
-    const yaExiste = await pool.query(
-      `
+      const yaExiste = await pool.query(
+        `
       SELECT 1
       FROM mensajes
       WHERE receptor_id = $1
@@ -442,47 +459,54 @@ router.post("/:id/alerta-falta-preop", requireAuth, requireAdmin, async (req, re
         AND DATE(creado_en) = CURRENT_DATE
       LIMIT 1
       `,
-      [id, `No registraste preoperacional el día ${fecha}. Por favor revisa y reporta la novedad.`]
-    );
+        [
+          id,
+          `No registraste preoperacional el día ${fecha}. Por favor revisa y reporta la novedad.`,
+        ],
+      );
 
-    if (yaExiste.rowCount > 0) {
-      return res.json({ ok: true, message: "La alerta ya fue enviada hoy." });
-    }
+      if (yaExiste.rowCount > 0) {
+        return res.json({ ok: true, message: "La alerta ya fue enviada hoy." });
+      }
 
-    await pool.query(
-      `
+      await pool.query(
+        `
       INSERT INTO mensajes (emisor_id, receptor_id, mensaje)
       VALUES ($1, $2, $3)
       `,
-      [
-        req.user.id,
-        id,
-        `No registraste preoperacional el día ${fecha}. Por favor revisa y reporta la novedad.`,
-      ]
-    );
+        [
+          req.user.id,
+          id,
+          `No registraste preoperacional el día ${fecha}. Por favor revisa y reporta la novedad.`,
+        ],
+      );
 
-    res.json({ ok: true, message: "Alerta enviada correctamente." });
-  } catch (err) {
-    if (err?.name === "ZodError") {
-      return res.status(400).json({
-        message: "Datos inválidos",
-        issues: err.issues,
-      });
+      res.json({ ok: true, message: "Alerta enviada correctamente." });
+    } catch (err) {
+      if (err?.name === "ZodError") {
+        return res.status(400).json({
+          message: "Datos inválidos",
+          issues: err.issues,
+        });
+      }
+
+      console.error("ERROR enviando alerta:", err);
+      res.status(500).json({ message: "Error enviando alerta" });
     }
+  },
+);
 
-    console.error("ERROR enviando alerta:", err);
-    res.status(500).json({ message: "Error enviando alerta" });
-  }
-});
+router.post(
+  "/:id/preoperacionales/habilitar",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params; // usuario_id
+      const data = habilitarPreopSchema.parse(req.body);
 
-
-router.post("/:id/preoperacionales/habilitar", requireAuth, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params; // usuario_id
-    const data = habilitarPreopSchema.parse(req.body);
-
-    const usuarioRes = await pool.query(
-      `
+      const usuarioRes = await pool.query(
+        `
       SELECT u.id, r.nombre AS rol
       FROM usuarios u
       JOIN roles r ON r.id = u.role_id
@@ -490,34 +514,36 @@ router.post("/:id/preoperacionales/habilitar", requireAuth, requireAdmin, async 
         AND u.activo = TRUE
       LIMIT 1
       `,
-      [id]
-    );
+        [id],
+      );
 
-    if (usuarioRes.rowCount === 0) {
-      return res.status(404).json({ message: "Usuario no encontrado." });
-    }
+      if (usuarioRes.rowCount === 0) {
+        return res.status(404).json({ message: "Usuario no encontrado." });
+      }
 
-    if (usuarioRes.rows[0].rol !== "colaborador") {
-      return res.status(400).json({ message: "Solo se puede habilitar a colaboradores." });
-    }
+      if (usuarioRes.rows[0].rol !== "colaborador") {
+        return res
+          .status(400)
+          .json({ message: "Solo se puede habilitar a colaboradores." });
+      }
 
-    const maqRes = await pool.query(
-      `
+      const maqRes = await pool.query(
+        `
       SELECT id, nombre
       FROM maquinaria
       WHERE id = $1
         AND dado_baja = FALSE
       LIMIT 1
       `,
-      [data.maquinaria_id]
-    );
+        [data.maquinaria_id],
+      );
 
-    if (maqRes.rowCount === 0) {
-      return res.status(404).json({ message: "Maquinaria no encontrada." });
-    }
+      if (maqRes.rowCount === 0) {
+        return res.status(404).json({ message: "Maquinaria no encontrada." });
+      }
 
-    const yaExistePreop = await pool.query(
-      `
+      const yaExistePreop = await pool.query(
+        `
       SELECT 1
       FROM preoperacionales
       WHERE usuario_id = $1
@@ -525,17 +551,17 @@ router.post("/:id/preoperacionales/habilitar", requireAuth, requireAdmin, async 
         AND DATE(fecha) = $3::date
       LIMIT 1
       `,
-      [id, data.maquinaria_id, data.fecha]
-    );
+        [id, data.maquinaria_id, data.fecha],
+      );
 
-    if (yaExistePreop.rowCount > 0) {
-      return res.status(400).json({
-        message: "Ese preoperacional ya fue respondido para esa fecha.",
-      });
-    }
+      if (yaExistePreop.rowCount > 0) {
+        return res.status(400).json({
+          message: "Ese preoperacional ya fue respondido para esa fecha.",
+        });
+      }
 
-    await pool.query(
-      `
+      await pool.query(
+        `
       UPDATE preoperacionales_habilitados
       SET activo = FALSE
       WHERE usuario_id = $1
@@ -543,15 +569,15 @@ router.post("/:id/preoperacionales/habilitar", requireAuth, requireAdmin, async 
         AND fecha_objetivo = $3::date
         AND activo = TRUE
       `,
-      [id, data.maquinaria_id, data.fecha]
-    );
+        [id, data.maquinaria_id, data.fecha],
+      );
 
-    const venceEn = new Date(Date.now() + 30 * 60 * 1000);
+      const venceEn = new Date(Date.now() + 30 * 60 * 1000);
 
-    const mensaje = `Se habilitó el preoperacional de la maquinaria ${maqRes.rows[0].nombre} para la fecha ${data.fecha} por 30 minutos.`;
+      const mensaje = `Se habilitó el preoperacional de la maquinaria ${maqRes.rows[0].nombre} para la fecha ${data.fecha} por 30 minutos.`;
 
-    const insertRes = await pool.query(
-      `
+      const insertRes = await pool.query(
+        `
       INSERT INTO preoperacionales_habilitados
       (
         usuario_id,
@@ -565,26 +591,27 @@ router.post("/:id/preoperacionales/habilitar", requireAuth, requireAdmin, async 
       VALUES ($1, $2, $3::date, $4, $5, TRUE, $6)
       RETURNING *
       `,
-      [id, data.maquinaria_id, data.fecha, req.user.id, mensaje, venceEn]
-    );
+        [id, data.maquinaria_id, data.fecha, req.user.id, mensaje, venceEn],
+      );
 
-    res.json({
-      ok: true,
-      message: "Preoperacional habilitado por 30 minutos.",
-      habilitacion: insertRes.rows[0],
-    });
-  } catch (err) {
-    if (err?.name === "ZodError") {
-      return res.status(400).json({
-        message: "Datos inválidos",
-        issues: err.issues,
+      res.json({
+        ok: true,
+        message: "Preoperacional habilitado por 30 minutos.",
+        habilitacion: insertRes.rows[0],
       });
-    }
+    } catch (err) {
+      if (err?.name === "ZodError") {
+        return res.status(400).json({
+          message: "Datos inválidos",
+          issues: err.issues,
+        });
+      }
 
-    console.error("ERROR habilitando preoperacional:", err);
-    res.status(500).json({ message: "Error habilitando preoperacional." });
-  }
-});
+      console.error("ERROR habilitando preoperacional:", err);
+      res.status(500).json({ message: "Error habilitando preoperacional." });
+    }
+  },
+);
 
 /* =========================
    ENDPOINT PARA MARCAR N/A
@@ -595,30 +622,35 @@ const naSchema = z.object({
   motivo: z.string().optional(),
 });
 
-router.post("/:id/preoperacionales/na", requireAuth, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { fecha, motivo } = naSchema.parse(req.body);
+router.post(
+  "/:id/preoperacionales/na",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { fecha, motivo } = naSchema.parse(req.body);
 
-    const existeRealizado = await pool.query(
-      `
+      const existeRealizado = await pool.query(
+        `
       SELECT 1
       FROM preoperacionales
       WHERE usuario_id = $1
         AND DATE(fecha) = $2::date
       LIMIT 1
       `,
-      [id, fecha]
-    );
+        [id, fecha],
+      );
 
-    if (existeRealizado.rowCount > 0) {
-      return res.status(400).json({
-        message: "Ese día ya tiene preoperacionales realizados. No se puede marcar como N/A.",
-      });
-    }
+      if (existeRealizado.rowCount > 0) {
+        return res.status(400).json({
+          message:
+            "Ese día ya tiene preoperacionales realizados. No se puede marcar como N/A.",
+        });
+      }
 
-    await pool.query(
-      `
+      await pool.query(
+        `
       INSERT INTO novedades_preoperacional (usuario_id, fecha, estado, motivo, creado_por)
       VALUES ($1, $2, 'na', $3, $4)
       ON CONFLICT (usuario_id, fecha)
@@ -628,10 +660,115 @@ router.post("/:id/preoperacionales/na", requireAuth, requireAdmin, async (req, r
         creado_por = EXCLUDED.creado_por,
         creado_en = NOW()
       `,
-      [id, fecha, motivo ?? null, req.user.id]
+        [id, fecha, motivo ?? null, req.user.id],
+      );
+
+      res.json({ ok: true, message: "Día marcado como N/A correctamente." });
+    } catch (err) {
+      if (err?.name === "ZodError") {
+        return res.status(400).json({
+          message: "Datos inválidos",
+          issues: err.issues,
+        });
+      }
+
+      console.error("ERROR marcando N/A:", err);
+      res.status(500).json({ message: "Error marcando día como N/A" });
+    }
+  },
+);
+
+const editarUsuarioSchema = z.object({
+  nombre: z.string().min(2),
+  cargo: z.string().min(2),
+  fecha_ingreso: z.string().min(8),
+  tipo_contrato: z.string().min(2),
+  rh: z.string().min(1),
+  direccion: z.string().min(3),
+  numero_documento: z.string().min(5),
+  foto_url: z.string().nullable().optional(),
+  rol: z.enum(["admin", "colaborador"]),
+});
+
+router.put("/:id", requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // El colaborador solo puede editar su propio perfil
+    // El admin puede editar cualquiera
+    if (req.user.id !== id && req.user.rol !== "admin") {
+      return res.status(403).json({ message: "No autorizado." });
+    }
+
+    if (req.user.id === id && req.user.rol !== "admin") {
+      req.body.rol = req.user.rol; // ignora lo que mande el frontend
+    }
+    const data = editarUsuarioSchema.parse(req.body);
+
+    const rolRes = await pool.query(`SELECT id FROM roles WHERE nombre = $1`, [
+      data.rol,
+    ]);
+
+    const roleId = rolRes.rows[0]?.id;
+    if (!roleId) {
+      return res.status(400).json({ message: "Rol no válido." });
+    }
+
+    const docDuplicado = await pool.query(
+      `
+      SELECT 1
+      FROM usuarios
+      WHERE numero_documento = $1
+        AND id <> $2
+      LIMIT 1
+      `,
+      [data.numero_documento, id],
     );
 
-    res.json({ ok: true, message: "Día marcado como N/A correctamente." });
+    if (docDuplicado.rowCount > 0) {
+      return res.status(409).json({
+        message: "Ya existe otro usuario con ese número de documento.",
+      });
+    }
+
+    const r = await pool.query(
+      `
+      UPDATE usuarios
+      SET
+        nombre = $1,
+        cargo = $2,
+        fecha_ingreso = $3,
+        tipo_contrato = $4,
+        rh = $5,
+        direccion = $6,
+        numero_documento = $7,
+        foto_url = $8,
+        role_id = $9
+      WHERE id = $10
+      RETURNING id, nombre
+      `,
+      [
+        data.nombre,
+        data.cargo,
+        data.fecha_ingreso,
+        data.tipo_contrato,
+        data.rh,
+        data.direccion,
+        data.numero_documento,
+        data.foto_url ?? null,
+        roleId,
+        id,
+      ],
+    );
+
+    if (r.rowCount === 0) {
+      return res.status(404).json({ message: "Usuario no encontrado." });
+    }
+
+    res.json({
+      message: "Usuario actualizado correctamente.",
+      user: r.rows[0],
+    });
   } catch (err) {
     if (err?.name === "ZodError") {
       return res.status(400).json({
@@ -640,64 +777,10 @@ router.post("/:id/preoperacionales/na", requireAuth, requireAdmin, async (req, r
       });
     }
 
-    console.error("ERROR marcando N/A:", err);
-    res.status(500).json({ message: "Error marcando día como N/A" });
+    console.error("ERROR editando usuario:", err);
+    res.status(500).json({ message: "Error actualizando usuario" });
   }
 });
-
-
-// ✅ NUEVO schema - COPIA ESTO EXACTO
-const editarUsuarioColabSchema = z.object({
-  direccion: z.string().optional(),
-  foto_url: z.string().nullable().optional(),
-}).passthrough();
-
-router.put("/:id", requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (req.user.id !== id && req.user.rol !== "admin") {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    const data = editarUsuarioColabSchema.parse(req.body);
-
-    const updates = [];
-    const params = [];
-    let i = 1;
-
-    if (data.direccion !== undefined) {
-      updates.push(`direccion = $${i}`);
-      params.push(data.direccion);
-      i++;
-    }
-    if (data.foto_url !== undefined) {
-      updates.push(`foto_url = $${i}`);
-      params.push(data.foto_url);
-      i++;
-    }
-
-    if (updates.length === 0) {
-      return res.status(400).json({ message: "Sin datos para actualizar" });
-    }
-
-    params.push(id);
-    const query = `UPDATE usuarios SET ${updates.join(", ")} WHERE id = $${i} RETURNING id, direccion`;
-
-    console.log("🔧 SQL:", query);
-    console.log("🔧 PARAMS:", params);
-
-    const result = await pool.query(query, params);
-    res.json({ message: "OK", user: result.rows[0] });
-  } catch (err) {
-    console.error("❌ ERROR PUT:", err);
-    if (err.name === "ZodError") {
-      console.log("🔍 ZOD:", err.issues);
-      return res.status(400).json({ error: "Zod", issues: err.issues });
-    }
-    res.status(500).json({ error: err.message });
-  }
-});
-
 
 /* =========================
    ELIMINAR COLABORADOR (ELIMINACIÓN LÓGICA)
@@ -718,7 +801,7 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res) => {
       FROM usuarios
       WHERE id = $1
       `,
-      [id]
+      [id],
     );
 
     if (existe.rowCount === 0) {
@@ -757,12 +840,13 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res) => {
       WHERE id = $2
       RETURNING id, nombre, activo
       `,
-      [randomPassword, id]
+      [randomPassword, id],
     );
 
     res.json({
       ok: true,
-      message: "Usuario desactivado correctamente. Se conservó su historial y se bloqueó el acceso a la plataforma.",
+      message:
+        "Usuario desactivado correctamente. Se conservó su historial y se bloqueó el acceso a la plataforma.",
       user: r.rows[0],
     });
   } catch (err) {
@@ -777,7 +861,5 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res) => {
     res.status(500).json({ message: "Error desactivando usuario." });
   }
 });
-
-
 
 export default router;
